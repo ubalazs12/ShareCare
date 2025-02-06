@@ -7,8 +7,22 @@
 
 <h1>Index</h1>
 
+@{
+    var message = TempData["Message"];
+}
+
+@if (message != null)
+{
+    <div class="alert alert-info">
+        @message
+    </div>
+}
+
 <p>
-    <a asp-action="Create">Create New</a>
+    <a class="btn btn-primary" asp-action="Create">Create New</a>
+    <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#joinGroupModal">
+        Join
+    </a>
 </p>
 <table class="table">
     <thead>
@@ -26,26 +40,58 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CreatorUser.FullName)
-            </td>
-            <td>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CreatorUser.FullName)
+                </td>
+                <td>
                     @foreach (var user in item.Users)
                     {
                         <p>@user.FullName</p>
                     }
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
+
+
+
+
+
+<!-- Modal (Popup) -->
+<div class="modal fade" id="joinGroupModal" tabindex="-1" aria-labelledby="joinGroupModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="joinGroupModalLabel">Join a group</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h7>Please type in the group's invite code</h7>
+                <br>
+                <form action="@Url.Action("JoinGroup", "Groups")" method="post" id="joinGroupForm">
+                    <div class="mb-3">
+                        <label for="inviteCode" class="form-label">Invite Code</label>
+                        <input type="text" class="form-control" id="inviteCode" name="inviteCode" placeholder="Enter invite code" required>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Join group</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

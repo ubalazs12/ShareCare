@@ -5,7 +5,7 @@
 namespace ShareCare.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class Updated_Relationships : Migration
+    public partial class Group_Def_Constructor : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

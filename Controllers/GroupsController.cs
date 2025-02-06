@@ -26,6 +26,7 @@ namespace ShareCare.Controllers
         }
 
         // GET: Groups
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -38,7 +39,8 @@ namespace ShareCare.Controllers
         }
 
         // GET: Groups/Details/5
-        public async Task<IActionResult> Details(int? id)
+        [HttpGet]
+        public async Task<IActionResult> Details(string? id)
         {
             if (id == null)
             {
@@ -59,6 +61,7 @@ namespace ShareCare.Controllers
         }
 
         // GET: Groups/Create
+        [HttpGet]
         public IActionResult Create()
         {
             return View();
@@ -89,7 +92,8 @@ namespace ShareCare.Controllers
         }
 
         // GET: Groups/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        [HttpGet]
+        public async Task<IActionResult> Edit(string? id)
         {
             if (id == null)
             {
@@ -110,7 +114,7 @@ namespace ShareCare.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,CreatorUserId")] Group @group)
+        public async Task<IActionResult> Edit(string id, [Bind("Id,Name,CreatorUserId")] Group @group)
         {
             if (id != @group.Id)
             {
@@ -142,7 +146,8 @@ namespace ShareCare.Controllers
         }
 
         // GET: Groups/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        [HttpGet]
+        public async Task<IActionResult> Delete(string? id)
         {
             if (id == null)
             {
@@ -163,7 +168,7 @@ namespace ShareCare.Controllers
         // POST: Groups/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(string id)
         {
             var @group = await _context.Groups.FindAsync(id);
             if (@group != null)
@@ -175,7 +180,43 @@ namespace ShareCare.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private bool GroupExists(int id)
+        // GET: Groups/JoinGroup
+        [HttpGet]
+        public IActionResult JoinGroup()
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
+        // POST: Groups/JoinGroup
+        [HttpPost]
+        public async Task<IActionResult> JoinGroup(string inviteCode)
+        {
+            if (string.IsNullOrEmpty(inviteCode))
+            {
+                TempData["Message"] = "Please enter a valid invite code.";
+                return RedirectToAction(nameof(Index));
+            }
+            var group = await _context.Groups.FindAsync(inviteCode);
+            if (group == null)
+            {
+                TempData["Message"] = "Couldn't find a group to join.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user != null)
+            {
+                group.Users.Add(user);
+
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+
+            TempData["Message"] = $"Successfully joined the group with invite code: {inviteCode}";
+            return RedirectToAction(nameof(Index)); // Optionally return a new view or redirect
+        }
+
+        private bool GroupExists(string id)
         {
             return _context.Groups.Any(e => e.Id == id);
         }

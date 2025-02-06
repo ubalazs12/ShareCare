@@ -7,7 +7,8 @@ namespace ShareCare.Models
     public class Group
     {
         [Key]
-        public int Id { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        public string Id { get; set; }
 
         [Required]
         public string Name { get; set; }
@@ -20,5 +21,24 @@ namespace ShareCare.Models
         public virtual ApplicationUser? CreatorUser { get; set; }
 
         public ICollection<ApplicationUser> Users { get; } = [];
+
+        public Group(string name)
+        {
+            Id = GenerateRandomId();
+            Name = name;
+        }
+
+        public Group()
+        {
+            Id = GenerateRandomId();
+        }
+
+        private string GenerateRandomId()
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            Random random = new Random();
+            return new string(Enumerable.Repeat(chars, 5)
+                .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
     }
 }
