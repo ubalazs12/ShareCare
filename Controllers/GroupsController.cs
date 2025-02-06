@@ -57,6 +57,10 @@ namespace ShareCare.Controllers
             }
 
             ViewData["Users"] = group.Users;
+
+            var request = HttpContext.Request;
+            var baseUrl = $"{request.Scheme}://{request.Host}";
+            ViewData["InviteLink"] = $"{baseUrl}/Groups/JoinGroupWithLink?inviteCode={group.Id}";
             return View(@group);
         }
 
@@ -79,8 +83,8 @@ namespace ShareCare.Controllers
             {
                 @group.CreatorUserId = user.Id;
                 @group.Users.Add(user);
-                ModelState.ClearValidationState(nameof(@group.CreatorUserId));
-                ModelState.MarkFieldValid(nameof(@group.CreatorUserId));
+                //ModelState.ClearValidationState(nameof(@group.CreatorUserId));
+                //ModelState.MarkFieldValid(nameof(@group.CreatorUserId));
             }
             if (ModelState.IsValid)
             {
@@ -180,23 +184,28 @@ namespace ShareCare.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // GET: Groups/JoinGroup
+        // GET: Groups/JoinGroupWithLink/5
         [HttpGet]
-        public IActionResult JoinGroup()
+        public async Task<IActionResult> JoinGroupWithLink([FromQuery] string inviteCode)
         {
-            return RedirectToAction(nameof(Index));
+            return await JoinGroupFunction(inviteCode);
         }
 
-        // POST: Groups/JoinGroup
+        // POST: Groups/JoinGroup/5
         [HttpPost]
         public async Task<IActionResult> JoinGroup(string inviteCode)
+        {
+            return await JoinGroupFunction(inviteCode);
+        }
+
+        private async Task<IActionResult> JoinGroupFunction(string inviteCode)
         {
             if (string.IsNullOrEmpty(inviteCode))
             {
                 TempData["Message"] = "Please enter a valid invite code.";
                 return RedirectToAction(nameof(Index));
             }
-            var group = await _context.Groups.FindAsync(inviteCode);
+            var group = await _context.Groups.Include(g => g.Users).FirstOrDefaultAsync(g => g.Id == inviteCode);
             if (group == null)
             {
                 TempData["Message"] = "Couldn't find a group to join.";
@@ -206,14 +215,18 @@ namespace ShareCare.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user != null)
             {
+                if (group.Users.Contains(user))
+                {
+                    TempData["Message"] = "You are already a member of this group.";
+                    return RedirectToAction(nameof(Index));
+                }
                 group.Users.Add(user);
 
                 await _context.SaveChangesAsync();
+                TempData["Message"] = $"Successfully joined the group: {group.Name}";
                 return RedirectToAction(nameof(Index));
             }
-
-            TempData["Message"] = $"Successfully joined the group with invite code: {inviteCode}";
-            return RedirectToAction(nameof(Index)); // Optionally return a new view or redirect
+            return Unauthorized();
         }
 
         private bool GroupExists(string id)

@@ -34,7 +34,7 @@ namespace ShareCare.Data.Migrations
 
                     b.HasIndex("UsersId");
 
-                    b.ToTable("ApplicationUserGroup");
+                    b.ToTable("ApplicationUserGroup", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -264,7 +264,7 @@ namespace ShareCare.Data.Migrations
 
                     b.HasIndex("CreatorUserId");
 
-                    b.ToTable("Groups");
+                    b.ToTable("Groups", (string)null);
                 });
 
             modelBuilder.Entity("ApplicationUserGroup", b =>
