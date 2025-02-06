@@ -7,14 +7,15 @@ namespace ShareCare.Models
     public class Group
     {
         [Key]
-        public int Id { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        public string? Id { get; set; } = "INITIAL_ID";
 
         [Required]
-        public string Name { get; set; }
+        public required string Name { get; set; }
 
         [ForeignKey("CreatorUser")]
         [Display(Name = "Creator")]
-        public string CreatorUserId { get; set; }
+        public string? CreatorUserId { get; set; }
 
         [Display(Name = "Creator")]
         public virtual ApplicationUser? CreatorUser { get; set; }

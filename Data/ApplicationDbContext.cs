@@ -27,5 +27,45 @@ namespace ShareCare.Data
                 .HasMany(group => group.Users)
                 .WithMany(user => user.Groups);
         }
+
+        public override int SaveChanges()
+        {
+            EnsureUniqueIds();
+            return base.SaveChanges();
+        }
+
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            EnsureUniqueIds();
+            return await base.SaveChangesAsync(cancellationToken);
+        }
+
+        private void EnsureUniqueIds()
+        {
+            EnsureUniqueGroupIds();
+        }
+
+        private void EnsureUniqueGroupIds()
+        {
+            foreach (var entry in ChangeTracker.Entries<Group>().Where(e => e.State == EntityState.Added))
+            {
+                string newId;
+                do
+                {
+                    newId = GenerateRandomId(6);
+                }
+                while (Groups.Any(g => g.Id == newId)); // Check DB for uniqueness
+
+                entry.Entity.Id = newId;
+            }
+        }
+
+        private static string GenerateRandomId(int length)
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            Random random = new Random();
+            return new string(Enumerable.Repeat(chars, length)
+                .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
     }
 }

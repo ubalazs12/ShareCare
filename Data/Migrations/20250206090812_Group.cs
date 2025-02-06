@@ -28,8 +28,7 @@ namespace ShareCare.Data.Migrations
                 name: "Groups",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatorUserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
@@ -48,7 +47,7 @@ namespace ShareCare.Data.Migrations
                 name: "ApplicationUserGroup",
                 columns: table => new
                 {
-                    GroupsId = table.Column<int>(type: "int", nullable: false),
+                    GroupsId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     UsersId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>

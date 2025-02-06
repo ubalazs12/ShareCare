@@ -24,8 +24,8 @@ namespace ShareCare.Data.Migrations
 
             modelBuilder.Entity("ApplicationUserGroup", b =>
                 {
-                    b.Property<int>("GroupsId")
-                        .HasColumnType("int");
+                    b.Property<string>("GroupsId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("UsersId")
                         .HasColumnType("nvarchar(450)");
@@ -34,7 +34,7 @@ namespace ShareCare.Data.Migrations
 
                     b.HasIndex("UsersId");
 
-                    b.ToTable("ApplicationUserGroup");
+                    b.ToTable("ApplicationUserGroup", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -249,11 +249,8 @@ namespace ShareCare.Data.Migrations
 
             modelBuilder.Entity("ShareCare.Models.Group", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("CreatorUserId")
                         .IsRequired()
@@ -267,7 +264,7 @@ namespace ShareCare.Data.Migrations
 
                     b.HasIndex("CreatorUserId");
 
-                    b.ToTable("Groups");
+                    b.ToTable("Groups", (string)null);
                 });
 
             modelBuilder.Entity("ApplicationUserGroup", b =>

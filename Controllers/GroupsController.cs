@@ -26,6 +26,7 @@ namespace ShareCare.Controllers
         }
 
         // GET: Groups
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -38,7 +39,8 @@ namespace ShareCare.Controllers
         }
 
         // GET: Groups/Details/5
-        public async Task<IActionResult> Details(int? id)
+        [HttpGet]
+        public async Task<IActionResult> Details(string? id)
         {
             if (id == null)
             {
@@ -55,10 +57,15 @@ namespace ShareCare.Controllers
             }
 
             ViewData["Users"] = group.Users;
+
+            var request = HttpContext.Request;
+            var baseUrl = $"{request.Scheme}://{request.Host}";
+            ViewData["InviteLink"] = $"{baseUrl}/Groups/JoinGroupWithLink?inviteCode={group.Id}";
             return View(@group);
         }
 
         // GET: Groups/Create
+        [HttpGet]
         public IActionResult Create()
         {
             return View();
@@ -76,8 +83,8 @@ namespace ShareCare.Controllers
             {
                 @group.CreatorUserId = user.Id;
                 @group.Users.Add(user);
-                ModelState.ClearValidationState(nameof(@group.CreatorUserId));
-                ModelState.MarkFieldValid(nameof(@group.CreatorUserId));
+                //ModelState.ClearValidationState(nameof(@group.CreatorUserId));
+                //ModelState.MarkFieldValid(nameof(@group.CreatorUserId));
             }
             if (ModelState.IsValid)
             {
@@ -89,7 +96,8 @@ namespace ShareCare.Controllers
         }
 
         // GET: Groups/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        [HttpGet]
+        public async Task<IActionResult> Edit(string? id)
         {
             if (id == null)
             {
@@ -110,7 +118,7 @@ namespace ShareCare.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,CreatorUserId")] Group @group)
+        public async Task<IActionResult> Edit(string id, [Bind("Id,Name,CreatorUserId")] Group @group)
         {
             if (id != @group.Id)
             {
@@ -142,7 +150,8 @@ namespace ShareCare.Controllers
         }
 
         // GET: Groups/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        [HttpGet]
+        public async Task<IActionResult> Delete(string? id)
         {
             if (id == null)
             {
@@ -163,7 +172,7 @@ namespace ShareCare.Controllers
         // POST: Groups/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(string id)
         {
             var @group = await _context.Groups.FindAsync(id);
             if (@group != null)
@@ -175,7 +184,52 @@ namespace ShareCare.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private bool GroupExists(int id)
+        // GET: Groups/JoinGroupWithLink/5
+        [HttpGet]
+        public async Task<IActionResult> JoinGroupWithLink([FromQuery] string inviteCode)
+        {
+            return await JoinGroupFunction(inviteCode);
+        }
+
+        // POST: Groups/JoinGroup/5
+        [HttpPost]
+        public async Task<IActionResult> JoinGroup(string inviteCode)
+        {
+            return await JoinGroupFunction(inviteCode);
+        }
+
+        private async Task<IActionResult> JoinGroupFunction(string inviteCode)
+        {
+            if (string.IsNullOrEmpty(inviteCode))
+            {
+                TempData["Message"] = "Please enter a valid invite code.";
+                return RedirectToAction(nameof(Index));
+            }
+            var group = await _context.Groups.Include(g => g.Users).FirstOrDefaultAsync(g => g.Id == inviteCode);
+            if (group == null)
+            {
+                TempData["Message"] = "Couldn't find a group to join.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user != null)
+            {
+                if (group.Users.Contains(user))
+                {
+                    TempData["Message"] = "You are already a member of this group.";
+                    return RedirectToAction(nameof(Index));
+                }
+                group.Users.Add(user);
+
+                await _context.SaveChangesAsync();
+                TempData["Message"] = $"Successfully joined the group: {group.Name}";
+                return RedirectToAction(nameof(Index));
+            }
+            return Unauthorized();
+        }
+
+        private bool GroupExists(string id)
         {
             return _context.Groups.Any(e => e.Id == id);
         }
