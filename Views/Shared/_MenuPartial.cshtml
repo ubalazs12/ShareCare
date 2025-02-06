@@ -1,0 +1,12 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using ShareCare.Data
+@using ShareCare.Models
+
+@inject SignInManager<ApplicationUser> SignInManager
+
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <li class="nav-item">
+            <a id="groups" class="nav-link text-dark" asp-controller="Groups" asp-action="Index" method="post" title="Groups">Groups</a>
+        </li>
+    }
