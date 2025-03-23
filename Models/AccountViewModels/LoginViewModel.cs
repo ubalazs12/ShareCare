@@ -7,13 +7,15 @@ namespace ShareCare.Models.AccountViewModels;
 
 public class LoginViewModel
 {
-    [Required]
+    [Required(ErrorMessage = "Az email cím vagy felhasználónév mező kitöltése kötelező!")]
+    [Display(Name = "Email cím vagy felhasználónév")]
     public string EmailOrUsername { get; set; }
 
-    [Required]
+    [Required(ErrorMessage = "A jelszó mező kitöltése kötelező!")]
+    [Display(Name = "Jelszó")]
     [DataType(DataType.Password)]
     public string Password { get; set; }
 
-    [Display(Name = "Remember me?")]
+    [Display(Name = "Jegyezz meg")]
     public bool RememberMe { get; set; }
 }

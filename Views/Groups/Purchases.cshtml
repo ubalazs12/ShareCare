@@ -1,0 +1,15 @@
+﻿@using ShareCare.Data
+@model ShareCare.Models.Group
+
+@{
+    ViewData["Title"] = "Purchases";
+    ViewData["Group"] = Model;
+    ViewData["GroupId"] = Model.Id;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var controller = "Groups";
+}
+
+<div>
+    <h1>Vásárlások</h1>
+    @await Html.PartialAsync("~/Views/Purchases/Index.cshtml", Model.Purchases)
+</div>

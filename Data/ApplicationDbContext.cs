@@ -8,6 +8,7 @@ namespace ShareCare.Data
     {
 
         public DbSet<Group> Groups { get; set; }
+        public DbSet<Purchase> Purchase { get; set; }
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
@@ -17,6 +18,7 @@ namespace ShareCare.Data
         {
             base.OnModelCreating(builder);
 
+            // Group
             builder.Entity<Group>()
                 .HasOne(group => group.CreatorUser)
                 .WithMany()
@@ -26,6 +28,44 @@ namespace ShareCare.Data
             builder.Entity<Group>()
                 .HasMany(group => group.Users)
                 .WithMany(user => user.Groups);
+
+            // Purchase
+            builder.Entity<Purchase>()
+                .HasOne(purchase => purchase.UploaderUser)
+                .WithMany(user => user.Purchases)
+                .HasForeignKey(purchase => purchase.UploaderUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Purchase>()
+                .HasOne(purchase => purchase.Group)
+                .WithMany(group => group.Purchases)
+                .HasForeignKey(purchase => purchase.GroupId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Debt
+            builder.Entity<Debt>()
+                .HasOne(debt => debt.UploaderUser)
+                .WithMany(uploader => uploader.Credits)
+                .HasForeignKey(debt => debt.UploaderUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Debt>()
+                .HasOne(debt => debt.OwerUser)
+                .WithMany(uploader => uploader.Debts)
+                .HasForeignKey(debt => debt.OwerUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Debt>()
+                .HasOne(debt => debt.Purchase)
+                .WithMany(purchase => purchase.Debts)
+                .HasForeignKey(debt => debt.PurchaseId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<Debt>()
+                .HasOne(debt => debt.Group)
+                .WithMany(group => group.Debts)
+                .HasForeignKey(debt => debt.GroupId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
         public override int SaveChanges()
@@ -67,5 +107,6 @@ namespace ShareCare.Data
             return new string(Enumerable.Repeat(chars, length)
                 .Select(s => s[random.Next(s.Length)]).ToArray());
         }
+        public DbSet<ShareCare.Models.Debt> Debt { get; set; } = default!;
     }
 }

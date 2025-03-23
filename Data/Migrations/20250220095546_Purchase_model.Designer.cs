@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ShareCare.Data;
 
@@ -11,9 +12,11 @@ using ShareCare.Data;
 namespace ShareCare.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250220095546_Purchase_model")]
+    partial class Purchase_model
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -247,48 +250,6 @@ namespace ShareCare.Data.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("ShareCare.Models.Debt", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<double>("Amount")
-                        .HasColumnType("float");
-
-                    b.Property<int>("ApprovalState")
-                        .HasColumnType("int");
-
-                    b.Property<string>("GroupId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("OwerUserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("PaymentState")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("PurchaseId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UploaderUserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GroupId");
-
-                    b.HasIndex("OwerUserId");
-
-                    b.HasIndex("PurchaseId");
-
-                    b.HasIndex("UploaderUserId");
-
-                    b.ToTable("Debt");
-                });
-
             modelBuilder.Entity("ShareCare.Models.Group", b =>
                 {
                     b.Property<string>("Id")
@@ -410,37 +371,6 @@ namespace ShareCare.Data.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ShareCare.Models.Debt", b =>
-                {
-                    b.HasOne("ShareCare.Models.Group", "Group")
-                        .WithMany("Debts")
-                        .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("ShareCare.Data.ApplicationUser", "OwerUser")
-                        .WithMany("Debts")
-                        .HasForeignKey("OwerUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("ShareCare.Models.Purchase", "Purchase")
-                        .WithMany("Debts")
-                        .HasForeignKey("PurchaseId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("ShareCare.Data.ApplicationUser", "UploaderUser")
-                        .WithMany("Credits")
-                        .HasForeignKey("UploaderUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Group");
-
-                    b.Navigation("OwerUser");
-
-                    b.Navigation("Purchase");
-
-                    b.Navigation("UploaderUser");
-                });
-
             modelBuilder.Entity("ShareCare.Models.Group", b =>
                 {
                     b.HasOne("ShareCare.Data.ApplicationUser", "CreatorUser")
@@ -470,23 +400,12 @@ namespace ShareCare.Data.Migrations
 
             modelBuilder.Entity("ShareCare.Data.ApplicationUser", b =>
                 {
-                    b.Navigation("Credits");
-
-                    b.Navigation("Debts");
-
                     b.Navigation("Purchases");
                 });
 
             modelBuilder.Entity("ShareCare.Models.Group", b =>
                 {
-                    b.Navigation("Debts");
-
                     b.Navigation("Purchases");
-                });
-
-            modelBuilder.Entity("ShareCare.Models.Purchase", b =>
-                {
-                    b.Navigation("Debts");
                 });
 #pragma warning restore 612, 618
         }

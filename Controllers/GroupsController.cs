@@ -7,7 +7,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using NuGet.DependencyResolver;
 using ShareCare.Data;
+using ShareCare.Logic;
 using ShareCare.Models;
 
 namespace ShareCare.Controllers
@@ -50,6 +52,7 @@ namespace ShareCare.Controllers
             var @group = await _context.Groups
                 .Include(group => group.CreatorUser)
                 .Include(group => group.Users)
+                .Include(group => group.Purchases)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (@group == null)
             {
@@ -61,6 +64,61 @@ namespace ShareCare.Controllers
             var request = HttpContext.Request;
             var baseUrl = $"{request.Scheme}://{request.Host}";
             ViewData["InviteLink"] = $"{baseUrl}/Groups/JoinGroupWithLink?inviteCode={group.Id}";
+            return View(@group);
+        }
+
+        // GET: Groups/Purchases/5
+        [HttpGet]
+        public async Task<IActionResult> Purchases(string? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var @group = await _context.Groups
+                .Include(group => group.CreatorUser)
+                .Include(group => group.Users)
+                .Include(group => group.Purchases)
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (@group == null)
+            {
+                return NotFound();
+            }
+
+            ViewData["Users"] = group.Users;
+
+            var request = HttpContext.Request;
+            var baseUrl = $"{request.Scheme}://{request.Host}";
+            ViewData["InviteLink"] = $"{baseUrl}/Groups/JoinGroupWithLink?inviteCode={group.Id}";
+            return View(@group);
+        }
+
+        // GET: Groups/Debts/5
+        [HttpGet]
+        public async Task<IActionResult> Debts(string? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var @group = await _context.Groups
+                .Include(group => group.CreatorUser)
+                .Include(group => group.Users)
+                .Include(group => group.Purchases)
+                    .ThenInclude(purchase => purchase.Debts)
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (@group == null)
+            {
+                return NotFound();
+            }
+
+            ViewData["TotalDebts"] = GetTotalDebtsNoSimplification(group)/*.OrderByDescending(totalDebt => totalDebt.Value)*/.ToList();
+            ViewData["TotalDebtsSimpler"] = GetTotalDebtsNoBackAndForth(group)/*.OrderByDescending(totalDebt => totalDebt.Value)*/.ToList();
+            ViewData["TotalDebtsSimplest"] = GetTotalDebtsTransitiveSimple(group)/*.OrderByDescending(totalDebt => totalDebt.Value)*/.ToList();
+            ViewData["Users"] = group.Users;
+
             return View(@group);
         }
 
@@ -227,6 +285,126 @@ namespace ShareCare.Controllers
                 return RedirectToAction(nameof(Index));
             }
             return Unauthorized();
+        }
+
+        private Dictionary<(ApplicationUser, ApplicationUser), double> GetTotalDebtsNoBackAndForth(Group group)
+        {
+            Dictionary<(ApplicationUser, ApplicationUser), double> totalDebts = [];
+            var userList = group.Users.ToList();
+            foreach (var receiver in group.Users)
+            {
+                foreach (var ower in group.Users)
+                {
+                    if (receiver != ower)
+                    {
+                        var roTuple = (receiver, ower);
+                        var orTuple = (ower, receiver);
+                        double roTotal = group.Debts.Where(debt => (debt.UploaderUser == receiver && debt.OwerUser == ower)).Sum(debt => debt.Amount);
+                        totalDebts[roTuple] = roTotal;
+                        if (totalDebts.ContainsKey(orTuple))
+                        {
+                            double orTotal = totalDebts[orTuple];
+                            totalDebts[roTuple] = Math.Max(0, roTotal - orTotal);
+                            totalDebts[orTuple] = Math.Max(0, orTotal - roTotal);
+                        }
+                    }
+                }
+            }
+            foreach(var debt in totalDebts)
+            {
+                if (debt.Value <= 0)
+                {
+                    totalDebts.Remove(debt.Key);
+                }
+            }
+            return totalDebts;
+        }
+
+            private Dictionary<(ApplicationUser, ApplicationUser), double> GetTotalDebtsTransitiveSimple(Group group)
+        {
+            Dictionary<(ApplicationUser, ApplicationUser), double> totalDebts = GetTotalDebtsNoBackAndForth(group);
+            var userList = group.Users.ToList();
+
+            string[] usernames = group.Users.Select(user => user.FullName).ToArray();
+            Dinics solver = new Dinics(group.Users.Count, usernames);
+            List<Edge> edges = new List<Edge>();
+            List<Edge> visitedEdges = new List<Edge>();
+            foreach (var totalDebt in totalDebts)
+            {
+                if (totalDebt.Value > 0)
+                {
+                    var from = userList.IndexOf(totalDebt.Key.Item2);
+                    var to = userList.IndexOf(totalDebt.Key.Item1);
+                    edges.Add(new Edge(from, to, totalDebt.Value));
+                }
+            }
+            solver.AddEdges(edges);
+
+            foreach (var edge in edges)
+            {
+                solver.Recompute();
+                solver.Source = edge.From;
+                solver.Sink = edge.To;
+                List<Edge>[] residualGraph = solver.GetSolvedGraph();
+                List<Edge> newEdges = new List<Edge>();
+
+                foreach (List<Edge> allEdges in residualGraph)
+                {
+                    foreach (Edge e in allEdges)
+                    {
+                        double remainingFlow = ((e.Flow < 0) ? e.Capacity : (e.Capacity - e.Flow));
+                        if (remainingFlow > 0)
+                        {
+                            newEdges.Add(new Edge(e.From, e.To, remainingFlow));
+                        }
+                    }
+                }
+
+                double maxFlow = solver.MaxFlow;
+
+                int source = solver.Source;
+                int sink = solver.Sink;
+
+                solver = new Dinics(group.Users.Count, usernames);
+
+                solver.AddEdges(newEdges);
+                if (maxFlow > 0)
+                {
+                    solver.AddEdge(source, sink, maxFlow);
+                }
+            }
+
+            totalDebts = [];
+
+            foreach (var resEdge in solver.Edges)
+            {
+                var ower = userList[resEdge.From];
+                var receiver = userList[resEdge.To];
+                totalDebts[(receiver, ower)] = resEdge.Capacity;
+            }
+
+
+            return totalDebts;
+        }
+
+        private Dictionary<(ApplicationUser, ApplicationUser), double> GetTotalDebtsNoSimplification(Group group)
+        {
+            Dictionary<(ApplicationUser, ApplicationUser), double> totalDebts = [];
+
+            foreach (var receiver in group.Users)
+            {
+                foreach (var ower in group.Users)
+                {
+                    if (receiver != ower)
+                    {
+                        var roTuple = (receiver, ower);
+                        var orTuple = (ower, receiver);
+                        totalDebts[roTuple] = group.Debts.Where(debt => (debt.UploaderUser == receiver && debt.OwerUser == ower)).Sum(debt => debt.Amount);
+                    }
+                }
+            }
+
+            return totalDebts;
         }
 
         private bool GroupExists(string id)

@@ -1,0 +1,73 @@
+﻿@using ShareCare.Data
+@model ShareCare.Models.Purchase
+
+@{
+    ViewData["Title"] = "Create";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    Group group = (Group) ViewData["Group"];
+    ApplicationUser user = (ApplicationUser)ViewData["User"];
+    int numberOfUsers = group.Users.Count;
+}
+
+<h1>Vásárlás rögzítése</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group" style="display: none">
+                <label asp-for="GroupId" class="control-label fw-bold"></label>
+                <select asp-for="GroupId" class ="form-control" asp-items="ViewBag.GroupId"></select>
+            </div>
+            <div class="form-group" style="display: none">
+                <label asp-for="UploaderUserId" class="control-label fw-bold"></label>
+                <select asp-for="UploaderUserId" class ="form-control" asp-items="ViewBag.UploaderUserId"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="TotalAmount" class="control-label fw-bold"></label>
+                <input asp-for="TotalAmount" class="form-control" />
+                <span asp-validation-for="TotalAmount" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label class="control-label fw-bold">Elosztások</label>
+                <div class="ps-5">
+                    @foreach (var member in group.Users)
+                    {
+                        <div class="form-group">
+                            <label class="control-label">@member.FullName</label>
+                            <input type="number" name=@member.Id class="form-control" />
+                        </div>
+                    }
+                </div>
+                
+            </div>
+            <div class="form-group">
+                <label asp-for="Note" class="control-label fw-bold"></label>
+                <input asp-for="Note" class="form-control" />
+                <span asp-validation-for="Note" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ImageData" class="control-label fw-bold"></label>
+                <input asp-for="ImageData" class="form-control" />
+                <span asp-validation-for="ImageData" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ImageMimeType" class="control-label fw-bold"></label>
+                <input asp-for="ImageMimeType" class="form-control" />
+                <span asp-validation-for="ImageMimeType" class="text-danger"></span>
+            </div>
+            <div class="form-group mt-2">
+                <input type="submit" value="Feltöltés" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-controller="Groups" asp-action="Purchases" asp-route-id="@group.Id" method="post" title="Purchases">Vissza a vásárlásokhoz</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ShareCare.Data;
 
@@ -11,9 +12,11 @@ using ShareCare.Data;
 namespace ShareCare.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250306105356_Connected_Debts_To_Group")]
+    partial class Connected_Debts_To_Group
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -425,7 +428,7 @@ namespace ShareCare.Data.Migrations
                     b.HasOne("ShareCare.Models.Purchase", "Purchase")
                         .WithMany("Debts")
                         .HasForeignKey("PurchaseId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("ShareCare.Data.ApplicationUser", "UploaderUser")
                         .WithMany("Credits")

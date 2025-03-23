@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ShareCare.Data;
 
@@ -11,9 +12,11 @@ using ShareCare.Data;
 namespace ShareCare.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250304200951_Added_Debt_To_Model")]
+    partial class Added_Debt_To_Model
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -261,9 +264,6 @@ namespace ShareCare.Data.Migrations
                     b.Property<int>("ApprovalState")
                         .HasColumnType("int");
 
-                    b.Property<string>("GroupId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<string>("OwerUserId")
                         .HasColumnType("nvarchar(450)");
 
@@ -277,8 +277,6 @@ namespace ShareCare.Data.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("GroupId");
 
                     b.HasIndex("OwerUserId");
 
@@ -412,11 +410,6 @@ namespace ShareCare.Data.Migrations
 
             modelBuilder.Entity("ShareCare.Models.Debt", b =>
                 {
-                    b.HasOne("ShareCare.Models.Group", "Group")
-                        .WithMany("Debts")
-                        .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("ShareCare.Data.ApplicationUser", "OwerUser")
                         .WithMany("Debts")
                         .HasForeignKey("OwerUserId")
@@ -425,14 +418,12 @@ namespace ShareCare.Data.Migrations
                     b.HasOne("ShareCare.Models.Purchase", "Purchase")
                         .WithMany("Debts")
                         .HasForeignKey("PurchaseId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("ShareCare.Data.ApplicationUser", "UploaderUser")
                         .WithMany("Credits")
                         .HasForeignKey("UploaderUserId")
                         .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Group");
 
                     b.Navigation("OwerUser");
 
@@ -479,8 +470,6 @@ namespace ShareCare.Data.Migrations
 
             modelBuilder.Entity("ShareCare.Models.Group", b =>
                 {
-                    b.Navigation("Debts");
-
                     b.Navigation("Purchases");
                 });
 

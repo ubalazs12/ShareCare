@@ -1,0 +1,182 @@
+﻿@using ShareCare.Data
+@model Group
+@{
+    ViewData["Title"] = "Debts";
+    ViewData["Group"] = Model;
+    ViewData["GroupId"] = Model.Id;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    List<KeyValuePair<(ApplicationUser, ApplicationUser), double>> totalDebts = (List<KeyValuePair<(ApplicationUser, ApplicationUser), double>>) ViewData["TotalDebts"];
+    List<KeyValuePair<(ApplicationUser, ApplicationUser), double>> totalDebtsSimpler = (List<KeyValuePair<(ApplicationUser, ApplicationUser), double>>)ViewData["TotalDebtsSimpler"];
+    List<KeyValuePair<(ApplicationUser, ApplicationUser), double>> totalDebtsSimplest = (List<KeyValuePair<(ApplicationUser, ApplicationUser), double>>)ViewData["TotalDebtsSimplest"];
+    var arrow = "---->";
+}
+
+<nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white mb-3 w-100">
+<ul class="navbar-nav flex-grow-1">
+    <li class="nav-item p-2">
+        <button onclick="toggleDiv('totalDebts')">Nem egyszerűsített tartozások</button>
+    </li>
+    <li class="nav-item p-2">
+        <button onclick="toggleDiv('totalDebtsSimpler')">Egyszerűsített tartozások (csak kölcsönös)</button>
+    </li>
+    <li class="nav-item p-2">
+        <button onclick="toggleDiv('totalDebtsSimplest')">Egyszerűsített tartozások (kölcsönös és körtartozás)</button>
+    </li>
+</ul>
+</nav>
+<div id="totalDebts" class="hidden ">
+    <h1>Nem egyszerűsített tartozások</h1>
+
+    <table class="table w-100 align-middle">
+        <thead>
+            <tr>
+                <th class="w-auto text-nowrap">
+                    Ki?
+                </th>
+                <th class="w-auto text-nowrap">
+                    @arrow
+                </th>
+                <th class="w-auto text-nowrap">
+                    Kinek?
+                </th>
+                <th class="w-75 text-end">
+                    Összeg
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var totalDebt in totalDebts)
+            {
+                if (true)
+                {
+                    <tr>
+                        <td class="text-nowrap">
+                            @totalDebt.Key.Item2.FullName
+                        </td>
+                        <td>
+                            @arrow
+                        </td>
+                        <td class="text-nowrap">
+                            @totalDebt.Key.Item1.FullName
+                        </td>
+                        <td class="text-end">
+                            @totalDebt.Value
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+<div id="totalDebtsSimpler">
+    <h1>Egyszerűsített tartozások (csak kölcsönös)</h1>
+
+    <table class="table align-middle w-100">
+        <thead>
+            <tr>
+                <th class="w-auto text-nowrap">
+                    Ki?
+                </th>
+                <th class="w-auto text-nowrap">
+                    @arrow
+                </th>
+                <th class="w-auto text-nowrap">
+                    Kinek?
+                </th>
+                <th class="w-75 text-end">
+                    Összeg
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var totalDebt in totalDebtsSimpler)
+            {
+                if (true)
+                {
+                    <tr>
+                        <td class="text-nowrap">
+                            @totalDebt.Key.Item2.FullName
+                        </td>
+                        <td>
+                            @arrow
+                        </td>
+                        <td class="text-nowrap">
+                            @totalDebt.Key.Item1.FullName
+                        </td>
+                        <td class="text-end">
+                            @totalDebt.Value
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+<div id="totalDebtsSimplest" class="hidden">
+    <h1>Egyszerűsített tartozások (kölcsönös és körtartozás)</h1>
+
+    <table class="table align-middle w-100">
+        <thead>
+            <tr>
+                <th class="w-auto text-nowrap">
+                    Ki?
+                </th>
+                <th class="w-auto text-nowrap">
+                    @arrow
+                </th>
+                <th class="w-auto text-nowrap">
+                    Kinek?
+                </th>
+                <th class="w-75 text-end">
+                    Összeg
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var totalDebt in totalDebtsSimplest)
+            {
+                if (true)
+                {
+                    <tr>
+                        <td class="text-nowrap">
+                            @totalDebt.Key.Item2.FullName
+                        </td>
+                        <td>
+                            @arrow
+                        </td>
+                        <td class="text-nowrap">
+                            @totalDebt.Key.Item1.FullName
+                        </td>
+                        <td class="text-end">
+                            @totalDebt.Value
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+<style>
+    .hidden {
+        display: none;
+    }
+</style>
+
+<script>
+    function toggleDiv(divId) {
+        var list = ["totalDebts", "totalDebtsSimpler", "totalDebtsSimplest"];
+        list.forEach((item, index) => {
+            if (item === divId) 
+            { 
+                document.getElementById(item).style.display = "block";
+            }
+            else
+            {
+                document.getElementById(item).style.display = "none";
+            }
+        });
+    }
+</script>

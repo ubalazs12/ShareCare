@@ -7,31 +7,32 @@ namespace ShareCare.Models.AccountViewModels;
 
 public class RegisterViewModel
 {
-    [Required]
-    [EmailAddress]
-    [Display(Name = "Email")]
+    [Required(ErrorMessage = "Az email cím mező kitöltése kötelező!")]
+    [EmailAddress(ErrorMessage = "Az email cím formátuma nem megfelelő!")]
+    [Display(Name = "Email cím")]
     public string Email { get; set; }
 
-    [Required]
-    [Display(Name = "Username")]
+    [Required(ErrorMessage = "A felhasználónév mező kitöltése kötelező!")]
+    [Display(Name = "Felhasználónév")]
     public string UserName { get; set; }
 
-    [Required]
-    [Display(Name = "First Name")]
+    [Required(ErrorMessage = "A vezetéknév mező kitöltése kötelező!")]
+    [Display(Name = "Vezetéknév")]
     public string FirstName { get; set; }
 
-    [Required]
-    [Display(Name = "Last Name")]
+    [Required(ErrorMessage = "A keresztnév mező kitöltése kötelező!")]
+    [Display(Name = "Keresztnév")]
     public string LastName { get; set; }
 
-    [Required]
-    [StringLength(100, ErrorMessage = "The {0} must be at least {2} characters long.", MinimumLength = 6)]
+    [Required(ErrorMessage = "A jelszó mező kitöltése kötelező!")]
+    [StringLength(100, ErrorMessage = "A jelszónak legalább {2} karakter hosszúságúnak kell lennie!", MinimumLength = 6)]
     [DataType(DataType.Password)]
-    [Display(Name = "Password")]
+    [Display(Name = "Jelszó")]
     public string Password { get; set; }
 
+    [Required(ErrorMessage = "A jelszó újra mező kitöltése kötelező!")]
     [DataType(DataType.Password)]
-    [Display(Name = "Confirm password")]
-    [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+    [Display(Name = "Jelszó újra")]
+    [Compare("Password", ErrorMessage = "A jelszó megerősítése sikertelen!")]
     public string ConfirmPassword { get; set; }
 }

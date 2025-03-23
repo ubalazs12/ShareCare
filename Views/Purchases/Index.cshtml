@@ -1,0 +1,59 @@
+﻿@model IEnumerable<ShareCare.Models.Purchase>
+
+@{
+    var controller = "Purchases";
+    string groupId = (string) ViewData["GroupId"];
+}
+
+
+<p>
+    <a asp-controller=@controller asp-action="Create" asp-route-groupId=@groupId>Új vásárlás feltöltése</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.UploaderUser)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TotalAmount)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Note)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ImageData)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ImageMimeType)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.UploaderUser.FullName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TotalAmount)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Note)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ImageData)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ImageMimeType)
+            </td>
+            <td>
+                <a asp-controller=@controller asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-controller=@controller asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-controller=@controller asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

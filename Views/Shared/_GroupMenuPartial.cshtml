@@ -1,0 +1,23 @@
+﻿@model ShareCare.Models.Group
+<nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+    <div class="container-fluid">
+        <a class="navbar-brand" asp-area="" asp-controller="Groups" asp-action="Details" asp-route-id="@Model.Id">@Model.Name</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#group-navbar" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div id="group-navbar" class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+            <ul class="navbar-nav flex-grow-1">
+                @* <li class="nav-item">
+                    <a class="nav-link text-dark" asp-area="" asp-controller="Groups" asp-action="Members">Members</a>
+                </li> *@
+                <li class="nav-item">
+                    <a id="purchases" class="nav-link text-dark" asp-controller="Groups" asp-action="Purchases" asp-route-id="@Model.Id" method="post" title="Purchases">Vásárlások</a>
+                </li>
+                <li class="nav-item">
+                    <a id="debts" class="nav-link text-dark" asp-controller="Groups" asp-action="Debts" asp-route-id="@Model.Id" method="post" title="Debts">Tartozások</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>

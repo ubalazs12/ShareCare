@@ -19,9 +19,9 @@
 }
 
 <p>
-    <a class="btn btn-primary" asp-action="Create">Create New</a>
+    <a class="btn btn-success" asp-action="Create">Új csoport létrehozása</a>
     <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#joinGroupModal">
-        Join
+        Csatlakozás egy csoporthoz
     </a>
 </p>
 <table class="table">
@@ -44,7 +44,9 @@
         {
             <tr>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Name)
+                    <a asp-action="Details" asp-route-id="@item.Id">
+                        @Html.DisplayFor(modelItem => item.Name)
+                    </a>
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.CreatorUser.FullName) 
@@ -57,7 +59,6 @@
                 </td>
                 <td>
                     <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
                     <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
                 </td>
             </tr>
