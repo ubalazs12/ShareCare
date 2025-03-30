@@ -9,11 +9,12 @@
 
 @{
     var message = TempData["Message"];
+    var alertType = TempData["AlertType"];
 }
 
 @if (message != null)
 {
-    <div class="alert alert-info">
+    <div class="alert @alertType">
         @message
     </div>
 }
@@ -58,8 +59,8 @@
                     }
                 </td>
                 <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Módosítás</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Törlés</a>
                 </td>
             </tr>
         }
@@ -75,21 +76,20 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="joinGroupModalLabel">Join a group</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title" id="joinGroupModalLabel">Csatlakozás egy csoporthoz</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Bezár"></button>
             </div>
             <div class="modal-body">
-                <h7>Please type in the group's invite code</h7>
+                <h7>Kérem adja meg a csoport meghívó kódját!</h7>
                 <br>
                 <form action="@Url.Action("JoinGroup", "Groups")" method="post" id="joinGroupForm">
                     <div class="mb-3">
-                        <label for="inviteCode" class="form-label">Invite Code</label>
-                        <input type="text" class="form-control" id="inviteCode" name="inviteCode" placeholder="Enter invite code" required>
+                        <input type="text" class="form-control" id="inviteCode" name="inviteCode" placeholder="Meghívó kód" required>
                     </div>
 
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Join group</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Bezár</button>
+                        <button type="submit" class="btn btn-primary">Csatlakozás</button>
                     </div>
                 </form>
             </div>

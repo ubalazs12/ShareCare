@@ -194,6 +194,47 @@ namespace ShareCare.Controllers
             return RedirectToAction("Purchases", "Groups", new { id = purchase.GroupId });
         }
 
+        // POST: Purchases/Approve/5
+        [HttpPost, ActionName("Approve")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Approve(int id)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+            var purchase = await _context.Purchase.Include(purchase => purchase.Debts).FirstOrDefaultAsync(purchase => purchase.Id == id);
+            if (purchase != null)
+            {
+                var debt = purchase.Debts.FirstOrDefault(debt => debt.OwerUser == user);
+                if (debt == null)
+                {
+                    return NotFound();
+                }
+                debt.ApprovalState = eApprovalState.eApproved;
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction("PurchasesToApprove", "Groups", new { id = purchase.GroupId });
+        }
+
+        // POST: Purchases/Approve/5
+        [HttpPost, ActionName("Reject")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Reject(int id)
+        {
+            // TO DO
+            var purchase = await _context.Purchase.FindAsync(id);
+            if (purchase != null)
+            {
+                return NotFound();
+            }
+
+            //await _context.SaveChangesAsync();
+            return RedirectToAction("PurchasesToApprove", "Groups", new { id = purchase.GroupId });
+        }
+
         private bool PurchaseExists(int id)
         {
             return _context.Purchase.Any(e => e.Id == id);
@@ -213,7 +254,7 @@ namespace ShareCare.Controllers
                 debt.UploaderUserId = uploaderUser.Id;
                 debt.OwerUserId = member.Id;
                 debt.GroupId = group.Id;
-                debt.ApprovalState = eApprovalState.eIdle;
+                debt.ApprovalState = uploaderUser.Id == member.Id ? eApprovalState.eApproved : eApprovalState.eIdle;
                 debt.PaymentState = ePaymentState.eInvalid;
                 debts.Add(debt);
                 _context.Add(debt);

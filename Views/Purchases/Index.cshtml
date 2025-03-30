@@ -3,57 +3,86 @@
 @{
     var controller = "Purchases";
     string groupId = (string) ViewData["GroupId"];
+    string line = "-----";
 }
 
 
 <p>
     <a asp-controller=@controller asp-action="Create" asp-route-groupId=@groupId>Új vásárlás feltöltése</a>
 </p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.UploaderUser)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.TotalAmount)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Note)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ImageData)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ImageMimeType)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.UploaderUser.FullName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.TotalAmount)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Note)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ImageData)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ImageMimeType)
-            </td>
-            <td>
-                <a asp-controller=@controller asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-controller=@controller asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-controller=@controller asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+<div class="accordion" id="purchasesAccordion">
+    @foreach (var purchase in Model)
+    {
+        <div class="accordion-item">
+            <div class=" accordion-header d-flex align-items-center">
+                <span class="w-100 d-flex align-items-center">
+                    <span class="m-2">
+                        <div>
+                            <h4>@purchase.UploaderUser.FullName</h4>
+                        </div>
+                        <div class="ms-1">
+                            <h5>@purchase.TotalAmount</h5>
+                        </div>
+                        <div class="ms-1">
+                            <h5>@purchase.Note</h5>
+                        </div>
+                    </span>
+                    <span class="flex-grow-1 text-end me-3">
+                        <div>
+                            <form asp-action="Approve" asp-controller=@controller>
+                                <input type="hidden" id="id" name="id" value=@purchase.Id />
+                                <button type="submit" style="all: unset; cursor: pointer;"><i title="Elfogadás" class="fa fa-check fs-3 text-success m-1"></i></button>
+                            </form>
+                        </div>
+                        <div>
+                            <a asp-action="Edit" asp-controller=@controller asp-route-id=@purchase.Id>
+                                <i title="Módosítás" class="fa fa-pen fs-5 text-primary m-1"></i>
+                            </a>
+                        </div>
+                        <div>
+                            <form asp-action="Reject" asp-controller=@controller>
+                                <input type="hidden" id="id" name="id" value=@purchase.Id />
+                                <button type="submit" style="all: unset; cursor: pointer;"><i title="Elutasítás" class="fa fa-times fs-3 text-danger m-1"></i></button>
+                            </form>
+                        </div>
+                    </span>
+                </span>
+                <span>
+                    <button class="accordion-button collapsed size-2" type="button" data-bs-toggle="collapse" data-bs-target="#purchase-@purchase.Id"
+                            aria-expanded="false" aria-controls="purchase-@purchase.Id">
+                        
+                    </button>
+                </span>
+            </div>
+            <div id="purchase-@purchase.Id" class="accordion-collapse collapse" data-bs-parent="#purchasesAccordion">
+                @foreach (var debt in purchase.Debts)
+                {
+                    <div class="accordion-body">
+                        <span>
+                            @debt.OwerUser.FullName
+                        </span>
+                        <span>
+                            @line
+                        </span>
+                        <span>
+                            @debt.Amount
+                        </span>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .size-2 {
+        width: 100%;
+        height: 100%;
+    }
+
+    .size-2::after {
+        width: 2rem;
+        height: 2rem;
+        background-size: 2rem;
+    }
+</style>

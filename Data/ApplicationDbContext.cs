@@ -40,7 +40,7 @@ namespace ShareCare.Data
                 .HasOne(purchase => purchase.Group)
                 .WithMany(group => group.Purchases)
                 .HasForeignKey(purchase => purchase.GroupId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Debt
             builder.Entity<Debt>()
@@ -65,7 +65,7 @@ namespace ShareCare.Data
                 .HasOne(debt => debt.Group)
                 .WithMany(group => group.Debts)
                 .HasForeignKey(debt => debt.GroupId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.NoAction);
         }
 
         public override int SaveChanges()

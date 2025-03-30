@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
+using ShareCare.Models;
 
 namespace ShareCare.Logic
 {
@@ -60,17 +61,19 @@ namespace ShareCare.Logic
             {
                 foreach (Edge e in edges)
                 {
-                    AddEdge(e.From, e.To, e.Capacity);
+                    AddEdge(e.From, e.To, e.Capacity, e.Debts);
                 }
             }
         }
 
-        public void AddEdge(int from, int to, double capacity)
+        public void AddEdge(int from, int to, double capacity, HashSet<Debt> Debts)
         {
             Edge e1 = new Edge(from, to, capacity);
             Edge e2 = new Edge(to, from, 0);
             e1.Residual = e2;
             e2.Residual = e1;
+            e1.Debts = Debts;
+            e2.Debts = Debts;
             Graph[from].Add(e1);
             Graph[to].Add(e2);
             Edges.Add(e1);

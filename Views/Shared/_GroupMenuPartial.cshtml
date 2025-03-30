@@ -12,10 +12,16 @@
                     <a class="nav-link text-dark" asp-area="" asp-controller="Groups" asp-action="Members">Members</a>
                 </li> *@
                 <li class="nav-item">
-                    <a id="purchases" class="nav-link text-dark" asp-controller="Groups" asp-action="Purchases" asp-route-id="@Model.Id" method="post" title="Purchases">Vásárlások</a>
+                    <a id="purchases" class="nav-link text-dark" asp-controller="Groups" asp-action="Purchases" asp-route-id="@Model.Id" method="post" title="Vásárlások">Vásárlások</a>
                 </li>
                 <li class="nav-item">
-                    <a id="debts" class="nav-link text-dark" asp-controller="Groups" asp-action="Debts" asp-route-id="@Model.Id" method="post" title="Debts">Tartozások</a>
+                    <a id="purchasesToApprove" class="nav-link text-dark" asp-controller="Groups" asp-action="PurchasesToApprove" asp-route-id="@Model.Id" method="post" title="Elfogadásra váró vásárlások">Elfogadásra váró vásárlások</a>
+                </li>
+                <li class="nav-item">
+                    <a id="rejectedPurchases" class="nav-link text-dark" asp-controller="Groups" asp-action="RejectedPurchases" asp-route-id="@Model.Id" method="post" title="Elutasított vásárlások">Elutasított vásárlások</a>
+                </li>
+                <li class="nav-item">
+                    <a id="debts" class="nav-link text-dark" asp-controller="Groups" asp-action="Debts" asp-route-id="@Model.Id" method="post" title="Tartozások">Tartozások</a>
                 </li>
             </ul>
         </div>

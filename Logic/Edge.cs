@@ -1,4 +1,6 @@
-﻿namespace ShareCare.Logic
+﻿using ShareCare.Models;
+
+namespace ShareCare.Logic
 {
     public class Edge
     {
@@ -9,6 +11,8 @@
         public double Cost { get; set; }
         public double Capacity { get; set; }
         public int OriginalCost { get; set; }
+
+        public HashSet<Debt> Debts { get; set; } = [];
 
         public Edge(int from, int to, double capacity, double cost = 0)
         {  From = from;

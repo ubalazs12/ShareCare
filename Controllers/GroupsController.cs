@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using NuGet.DependencyResolver;
+using NuGet.Packaging;
 using ShareCare.Data;
 using ShareCare.Logic;
 using ShareCare.Models;
@@ -75,18 +76,95 @@ namespace ShareCare.Controllers
             {
                 return NotFound();
             }
-
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
             var @group = await _context.Groups
                 .Include(group => group.CreatorUser)
                 .Include(group => group.Users)
                 .Include(group => group.Purchases)
+                .ThenInclude(purchase => purchase.Debts)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (@group == null)
             {
                 return NotFound();
             }
 
+            ViewData["User"] = user;
             ViewData["Users"] = group.Users;
+            ViewData["Purchases"] = group.Purchases/*.Where(p => p.Debts.All(d => d.ApprovalState == eApprovalState.eApproved || d.OwerUser == d.UploaderUser))*/.ToList();
+
+            var request = HttpContext.Request;
+            var baseUrl = $"{request.Scheme}://{request.Host}";
+            ViewData["InviteLink"] = $"{baseUrl}/Groups/JoinGroupWithLink?inviteCode={group.Id}";
+            return View(@group);
+        }
+
+        // GET: Groups/PurchasesToApprove/5
+        [HttpGet]
+        public async Task<IActionResult> PurchasesToApprove(string? id)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var @group = await _context.Groups
+                .Include(group => group.CreatorUser)
+                .Include(group => group.Users)
+                .Include(group => group.Purchases)
+                .ThenInclude(purchase => purchase.Debts)
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (@group == null)
+            {
+                return NotFound();
+            }
+
+            ViewData["User"] = user;
+            ViewData["Users"] = group.Users;
+            ViewData["Purchases"] = group.Purchases.Where(p => p.Debts.Any(d => d.OwerUser == user && d.UploaderUser != user && d.ApprovalState == eApprovalState.eIdle)).ToList();
+
+            var request = HttpContext.Request;
+            var baseUrl = $"{request.Scheme}://{request.Host}";
+            ViewData["InviteLink"] = $"{baseUrl}/Groups/JoinGroupWithLink?inviteCode={group.Id}";
+            return View(@group);
+        }
+
+        // GET: Groups/RejectedPurchases/5
+        [HttpGet]
+        public async Task<IActionResult> RejectedPurchases(string? id)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var @group = await _context.Groups
+                .Include(group => group.CreatorUser)
+                .Include(group => group.Users)
+                .Include(group => group.Purchases)
+                .ThenInclude(purchase => purchase.Debts)
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (@group == null)
+            {
+                return NotFound();
+            }
+
+            ViewData["User"] = user;
+            ViewData["Users"] = group.Users;
+            ViewData["Purchases"] = group.Purchases.Where(p => p.UploaderUser == user && p.Debts.Any(d => d.ApprovalState == eApprovalState.eRejected)).ToList();
 
             var request = HttpContext.Request;
             var baseUrl = $"{request.Scheme}://{request.Host}";
@@ -114,9 +192,9 @@ namespace ShareCare.Controllers
                 return NotFound();
             }
 
-            ViewData["TotalDebts"] = GetTotalDebtsNoSimplification(group)/*.OrderByDescending(totalDebt => totalDebt.Value)*/.ToList();
-            ViewData["TotalDebtsSimpler"] = GetTotalDebtsNoBackAndForth(group)/*.OrderByDescending(totalDebt => totalDebt.Value)*/.ToList();
-            ViewData["TotalDebtsSimplest"] = GetTotalDebtsTransitiveSimple(group)/*.OrderByDescending(totalDebt => totalDebt.Value)*/.ToList();
+            ViewData["TotalDebts"] = GetTotalDebtsNoSimplification(group).Where(totalDebt => (totalDebt.Value > 0)).ToList();
+            ViewData["TotalDebtsSimpler"] = GetTotalDebtsNoBackAndForth(group).Where(totalDebt => (totalDebt.Value.Value > 0)).ToList();
+            ViewData["TotalDebtsSimplest"] = GetTotalDebtsTransitiveSimple(group).Where(totalDebt => (totalDebt.Value.Value > 0)).ToList();
             ViewData["Users"] = group.Users;
 
             return View(@group);
@@ -260,13 +338,15 @@ namespace ShareCare.Controllers
         {
             if (string.IsNullOrEmpty(inviteCode))
             {
-                TempData["Message"] = "Please enter a valid invite code.";
+                TempData["Message"] = "Kérem adjon meg egy érvényes meghívó kódot.";
+                TempData["AlertType"] = "alert-danger";
                 return RedirectToAction(nameof(Index));
             }
             var group = await _context.Groups.Include(g => g.Users).FirstOrDefaultAsync(g => g.Id == inviteCode);
             if (group == null)
             {
-                TempData["Message"] = "Couldn't find a group to join.";
+                TempData["Message"] = "Nem találtuk a csoportot.";
+                TempData["AlertType"] = "alert-danger";
                 return RedirectToAction(nameof(Index));
             }
 
@@ -275,21 +355,23 @@ namespace ShareCare.Controllers
             {
                 if (group.Users.Contains(user))
                 {
-                    TempData["Message"] = "You are already a member of this group.";
+                    TempData["Message"] = "Ön már tagja ennek a csoportnak.";
+                    TempData["AlertType"] = "alert-danger";
                     return RedirectToAction(nameof(Index));
                 }
                 group.Users.Add(user);
 
                 await _context.SaveChangesAsync();
-                TempData["Message"] = $"Successfully joined the group: {group.Name}";
+                TempData["Message"] = $"Sikeres csatlakozás: {group.Name}";
+                TempData["AlertType"] = "alert-info";
                 return RedirectToAction(nameof(Index));
             }
             return Unauthorized();
         }
 
-        private Dictionary<(ApplicationUser, ApplicationUser), double> GetTotalDebtsNoBackAndForth(Group group)
+        private Dictionary<(ApplicationUser, ApplicationUser), ValueAndList> GetTotalDebtsNoBackAndForth(Group group)
         {
-            Dictionary<(ApplicationUser, ApplicationUser), double> totalDebts = [];
+            Dictionary<(ApplicationUser, ApplicationUser), ValueAndList> totalDebts = [];
             var userList = group.Users.ToList();
             foreach (var receiver in group.Users)
             {
@@ -299,30 +381,35 @@ namespace ShareCare.Controllers
                     {
                         var roTuple = (receiver, ower);
                         var orTuple = (ower, receiver);
-                        double roTotal = group.Debts.Where(debt => (debt.UploaderUser == receiver && debt.OwerUser == ower)).Sum(debt => debt.Amount);
-                        totalDebts[roTuple] = roTotal;
+                        double roTotal = group.Debts.Where(debt => (debt.UploaderUser == receiver && debt.OwerUser == ower && debt.ApprovalState == eApprovalState.eApproved)).Sum(debt => debt.Amount);
+                        totalDebts[roTuple] = new ValueAndList();
+                        totalDebts[roTuple].Value = roTotal;
+                        totalDebts[roTuple].Debts.AddRange(group.Debts.Where(debt => (debt.UploaderUser == receiver && debt.OwerUser == ower)));
                         if (totalDebts.ContainsKey(orTuple))
                         {
-                            double orTotal = totalDebts[orTuple];
-                            totalDebts[roTuple] = Math.Max(0, roTotal - orTotal);
-                            totalDebts[orTuple] = Math.Max(0, orTotal - roTotal);
+                            double orTotal = totalDebts[orTuple].Value;
+                            totalDebts[roTuple].Value = Math.Max(0, roTotal - orTotal);
+                            totalDebts[roTuple].Debts.AddRange(totalDebts[orTuple].Debts);
+
+                            totalDebts[orTuple].Value = Math.Max(0, orTotal - roTotal);
+                            totalDebts[orTuple].Debts.AddRange(totalDebts[roTuple].Debts);
                         }
                     }
                 }
             }
-            foreach(var debt in totalDebts)
-            {
-                if (debt.Value <= 0)
-                {
-                    totalDebts.Remove(debt.Key);
-                }
-            }
+            //foreach(var debt in totalDebts)
+            //{
+            //    if (debt.Value.Value <= 0)
+            //    {
+            //        totalDebts.Remove(debt.Key);
+            //    }
+            //}
             return totalDebts;
         }
 
-            private Dictionary<(ApplicationUser, ApplicationUser), double> GetTotalDebtsTransitiveSimple(Group group)
+        private Dictionary<(ApplicationUser, ApplicationUser), ValueAndList> GetTotalDebtsTransitiveSimple(Group group)
         {
-            Dictionary<(ApplicationUser, ApplicationUser), double> totalDebts = GetTotalDebtsNoBackAndForth(group);
+            Dictionary<(ApplicationUser, ApplicationUser), ValueAndList> totalDebts = GetTotalDebtsNoBackAndForth(group);
             var userList = group.Users.ToList();
 
             string[] usernames = group.Users.Select(user => user.FullName).ToArray();
@@ -331,11 +418,13 @@ namespace ShareCare.Controllers
             List<Edge> visitedEdges = new List<Edge>();
             foreach (var totalDebt in totalDebts)
             {
-                if (totalDebt.Value > 0)
+                if (totalDebt.Value.Value >= 0)
                 {
                     var from = userList.IndexOf(totalDebt.Key.Item2);
                     var to = userList.IndexOf(totalDebt.Key.Item1);
-                    edges.Add(new Edge(from, to, totalDebt.Value));
+                    var edge = new Edge(from, to, totalDebt.Value.Value);
+                    edge.Debts.AddRange(totalDebt.Value.Debts);
+                    edges.Add(edge);
                 }
             }
             solver.AddEdges(edges);
@@ -347,6 +436,7 @@ namespace ShareCare.Controllers
                 solver.Sink = edge.To;
                 List<Edge>[] residualGraph = solver.GetSolvedGraph();
                 List<Edge> newEdges = new List<Edge>();
+                HashSet<Debt> debts = edge.Debts;
 
                 foreach (List<Edge> allEdges in residualGraph)
                 {
@@ -355,7 +445,13 @@ namespace ShareCare.Controllers
                         double remainingFlow = ((e.Flow < 0) ? e.Capacity : (e.Capacity - e.Flow));
                         if (remainingFlow > 0)
                         {
-                            newEdges.Add(new Edge(e.From, e.To, remainingFlow));
+                            var newEdge = new Edge(e.From, e.To, remainingFlow);
+                            newEdge.Debts.AddRange(e.Debts);
+                            newEdges.Add(newEdge);
+                        }
+                        else
+                        {
+                            debts.AddRange(e.Debts);
                         }
                     }
                 }
@@ -370,19 +466,41 @@ namespace ShareCare.Controllers
                 solver.AddEdges(newEdges);
                 if (maxFlow > 0)
                 {
-                    solver.AddEdge(source, sink, maxFlow);
+                    solver.AddEdge(source, sink, maxFlow, debts);
                 }
             }
 
+
             totalDebts = [];
+            Dictionary<(ApplicationUser, ApplicationUser), double> totalDebts2 = [];
 
             foreach (var resEdge in solver.Edges)
             {
                 var ower = userList[resEdge.From];
                 var receiver = userList[resEdge.To];
-                totalDebts[(receiver, ower)] = resEdge.Capacity;
+                totalDebts2[(receiver, ower)] = resEdge.Capacity;
+
+                totalDebts[(receiver, ower)] = new ValueAndList();
+                totalDebts[(receiver, ower)].Value = resEdge.Capacity;
+                totalDebts[(receiver, ower)].Debts = resEdge.Debts;
             }
 
+            foreach (var totalDebt in totalDebts)
+            {
+                var receiver = totalDebt.Key.Item1;
+                var ower = totalDebt.Key.Item2;
+                var roTuple = (receiver, ower);
+                var orTuple = (ower, receiver);
+
+                if (totalDebts.ContainsKey(orTuple))
+                {
+                    double orTotal = totalDebts[orTuple].Value;
+                    double roTotal = totalDebt.Value.Value;
+                    totalDebt.Value.Value = Math.Max(0, roTotal - orTotal);
+
+                    totalDebts[orTuple].Value = Math.Max(0, orTotal - roTotal);
+                }
+            }
 
             return totalDebts;
         }
@@ -399,7 +517,7 @@ namespace ShareCare.Controllers
                     {
                         var roTuple = (receiver, ower);
                         var orTuple = (ower, receiver);
-                        totalDebts[roTuple] = group.Debts.Where(debt => (debt.UploaderUser == receiver && debt.OwerUser == ower)).Sum(debt => debt.Amount);
+                        totalDebts[roTuple] = group.Debts.Where(debt => (debt.UploaderUser == receiver && debt.OwerUser == ower && debt.ApprovalState == eApprovalState.eApproved)).Sum(debt => debt.Amount);
                     }
                 }
             }

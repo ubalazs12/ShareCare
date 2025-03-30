@@ -12,8 +12,8 @@ using ShareCare.Data;
 namespace ShareCare.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250308154329_Purchase_Debt_Cascade")]
-    partial class Purchase_Debt_Cascade
+    [Migration("20250327104236_Cascade")]
+    partial class Cascade
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -190,6 +190,7 @@ namespace ShareCare.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
+                        .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
@@ -234,6 +235,7 @@ namespace ShareCare.Data.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("UserName")
+                        .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
@@ -418,7 +420,7 @@ namespace ShareCare.Data.Migrations
                     b.HasOne("ShareCare.Models.Group", "Group")
                         .WithMany("Debts")
                         .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("ShareCare.Data.ApplicationUser", "OwerUser")
                         .WithMany("Debts")
@@ -459,7 +461,7 @@ namespace ShareCare.Data.Migrations
                     b.HasOne("ShareCare.Models.Group", "Group")
                         .WithMany("Purchases")
                         .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("ShareCare.Data.ApplicationUser", "UploaderUser")
                         .WithMany("Purchases")
