@@ -1,0 +1,115 @@
+﻿@using ShareCare.Data
+@using ShareCare.Logic
+@model Group
+@{
+    ViewData["Title"] = "Debts";
+    ViewData["Group"] = Model;
+    ViewData["GroupId"] = Model.Id;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    List<KeyValuePair<(ApplicationUser, ApplicationUser), ValueAndList>> debtsToOthers = (List<KeyValuePair<(ApplicationUser, ApplicationUser), ValueAndList>>)ViewData["DebtsToOthers"];
+    List<KeyValuePair<(ApplicationUser, ApplicationUser), ValueAndList>> debtsToMe = (List<KeyValuePair<(ApplicationUser, ApplicationUser), ValueAndList>>)ViewData["DebtsToMe"];
+
+    List<Purchase> IdlePayments = ViewData["IdlePayments"] as List<Purchase>;
+    ApplicationUser user = ViewData["User"] as ApplicationUser;
+
+    var arrow = "---->";
+}
+
+<h1>Tartozások</h1>
+
+<h2 class="mt-4 mb-2">Tartozásaim</h2>
+<div>
+    @foreach (var totalDebt in debtsToOthers)
+    {
+        <div class="card">
+            <div class="card-header w-100 d-flex align-items-center">
+                <span class="p-1">
+                    @totalDebt.Key.Item2.FullName
+                </span>
+                <span class="p-1">
+                    @arrow
+                </span>
+                <span class="p-1">
+                    @totalDebt.Key.Item1.FullName
+                </span>
+                <span class="p-1">
+                    @totalDebt.Value.Value
+                </span>
+                <span class="flex-grow-1 text-end me-3">
+                    <form asp-action="PayDebt" asp-controller="Purchases">
+                        <input type="hidden" id="groupId" name="groupId" value=@Model.Id />
+                        <input type="hidden" id="owerId" name="owerId" value=@totalDebt.Key.Item2.Id />
+                        <input type="hidden" id="receiverId" name="receiverId" value=@totalDebt.Key.Item1.Id />
+                        <input type="hidden" id="value" name="value" value=@totalDebt.Value.Value />
+                        <button type="submit" style="all: unset; cursor: pointer;"><i title="Kiegyenlítés" class="fa fa-money-bill-transfer fs-3 text-success m-1"></i></button>
+                    </form>
+                </span>
+            </div>
+        </div>
+    }
+</div>
+
+<h2 class="mt-4 mb-2">Mások tartozásai nekem</h2>
+<div>
+    @foreach (var totalDebt in debtsToMe)
+    {
+        <div class="card">
+            <div class="card-header w-100 d-flex align-items-center">
+                <span>
+                    @totalDebt.Key.Item2.FullName
+                </span>
+                <span>
+                    @arrow
+                </span>
+                <span>
+                    @totalDebt.Key.Item1.FullName
+                </span>
+                <span>
+                    @totalDebt.Value.Value
+                </span>
+            </div>
+        </div>
+    }
+</div>
+
+<h2 class="mt-4 mb-2">Elfogadásra váró kiegyenlítések</h2>
+    <div>
+        @foreach (var payment in IdlePayments)
+        {
+            foreach (var debt in payment.Debts)
+            {
+                <div class="card">
+                    <div class="card-header w-100 d-flex align-items-center">
+                        @* <span class="p-1">
+                            <h4>@debt.UploaderUser.FullName</h4>
+                        </span>
+                        <span class="p-1">
+                            <h4>fizetett</h4>
+                        </span>
+                        <span class="p-1">
+                            <h4>@debt.OwerUser.FullName</h4>
+                        </span>
+                        <span class="p-1">
+                            <h4>felhasználónak</h4>
+                        </span>
+                        <span class="p-1">
+                            <h4>@debt.Amount Ft-ot</h4>
+                        </span> *@
+                        <span class="p-1">
+                            @debt.UploaderUser.FullName fizetett @debt.OwerUser.FullName felhasználónak @debt.Amount Ft-ot
+                        </span>
+                        @if (debt.OwerUser == user)
+                        {
+                            <span class="flex-grow-1 text-end me-3">
+                                <form asp-action="ApprovePayment" asp-controller="Debts">
+                                    <input type="hidden" id="id" name="id" value=@debt.Id />
+                                    <button type="submit" style="all: unset; cursor: pointer;"><i title="Elfogadás" class="fa fa-check fs-3 text-success m-1"></i></button>
+                                </form>
+                            </span>
+                        }
+                    </div>
+                </div>
+            }
+        }
+    </div>

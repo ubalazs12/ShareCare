@@ -1,0 +1,129 @@
+﻿@using ShareCare.Data
+@model ShareCare.Models.Group
+
+@{
+    ViewData["Title"] = "RejectedPurchases";
+    ViewData["Group"] = Model;
+    ViewData["GroupId"] = Model.Id;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var controller = "Groups";
+    List<Purchase> purchases = ViewData["Purchases"] as List<Purchase>;
+    ApplicationUser user = ViewData["User"] as ApplicationUser;
+}
+
+<div>
+    <h1>Elutasított vásárlások</h1>
+    @* @await Html.PartialAsync("~/Views/Purchases/Index.cshtml", purchases) *@
+
+    <p>
+        <a asp-controller="Purchases" asp-action="Create" asp-route-groupId=@Model.Id>Új vásárlás feltöltése</a>
+    </p>
+    <div class="accordion" id="purchasesAccordion">
+        @foreach (var purchase in purchases)
+        {
+            <div class="accordion-item">
+                <div class=" accordion-header d-flex align-items-center">
+                    <button class="accordion-button collapsed size-2" type="button" data-bs-toggle="collapse" data-bs-target="#purchase-@purchase.Id"
+                            aria-expanded="false" aria-controls="purchase-@purchase.Id">
+                        <span class="w-100 d-flex align-items-center">
+                            <span class="m-2">
+                                <div>
+                                    <h4>@purchase.UploaderUser.FullName</h4>
+                                </div>
+                                <div class="ms-1">
+                                    <h5>@purchase.TotalAmount</h5>
+                                </div>
+                                <div class="ms-1">
+                                    <h5>@purchase.Note</h5>
+                                </div>
+                            </span>
+                        </span>
+
+                    </button>
+                </div>
+                <div id="purchase-@purchase.Id" class="accordion-collapse collapse">
+                    @if (purchase.ImageData != null)
+                    {
+                        <div class="p-3 pb-0">
+                            <button style="all: unset; cursor: pointer;" data-bs-toggle="modal" data-bs-target="#imageModal-@purchase.Id">
+                                <i title="Kép megtekintése" class="bi bi-image fs-1"></i>
+                            </button>
+                        </div>
+
+                        <div class="modal fade" id="imageModal-@purchase.Id" tabindex="-1" aria-labelledby="imageModalLabel-@purchase.Id" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="imageModalLabel-@purchase.Id"></h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Bezárás"></button>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <img src="@Url.Action("GetImage", "Purchases", new { id = purchase.Id })"
+                                             class="img-fluid"
+                                             style="max-height: 80vh;" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    @foreach (var debt in purchase.Debts.Where(debt => debt.ApprovalState == eApprovalState.eRejected))
+                    {
+                        <div class="accordion-body w-100 d-flex align-items-center">
+                            <span>
+                                <div>
+                                    @debt.OwerUser.FullName
+                                </div>
+                                <div>
+                                    @debt.Amount
+                                </div>
+                            </span>
+                            <span class="flex-grow-1 text-end me-3">
+                                <div>
+                                    <a asp-action="Edit" asp-controller="Debts" asp-route-id=@debt.Id>
+                                        <i title="Módosítás" class="fa fa-pen fs-5 text-primary m-1"></i>
+                                    </a>
+                                </div>
+                            </span>
+                            @* @if (debt.OwerUser == user)
+                            {
+                                <span class="flex-grow-1 text-end me-3">
+                                    <form asp-action="Approve" asp-controller="Debts">
+                                        <input type="hidden" id="id" name="id" value=@debt.Id />
+                                        <button type="submit" style="all: unset; cursor: pointer;"><i title="Elfogadás" class="fa fa-check fs-3 text-success m-1"></i></button>
+                                    </form>
+                                </span>
+                                <span class="text-end me-3">
+                                    <form asp-action="Reject" asp-controller=Debts>
+                                        <input type="hidden" id="id" name="id" value=@purchase.Id />
+                                        <button type="submit" style="all: unset; cursor: pointer;"><i title="Elutasítás" class="fa fa-times fs-3 text-danger m-1"></i></button>
+                                    </form>
+                                </span>
+                            }
+                            else
+                            {
+                                switch (debt.ApprovalState)
+                                {
+                                    case eApprovalState.eIdle:
+                                        <span class="flex-grow-1 text-end me-3">
+                                            Elfogadásra vár
+                                        </span>
+                                        break;
+                                    case eApprovalState.eRejected:
+                                        <span class="flex-grow-1 text-end me-3">
+                                            Elutasítva
+                                        </span>
+                                        break;
+                                    case eApprovalState.eApproved:
+                                        <span class="flex-grow-1 text-end me-3">
+                                            Elfogadva
+                                        </span>
+                                        break;
+                                }
+                            } *@
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
