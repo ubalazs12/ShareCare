@@ -1,0 +1,104 @@
+﻿@using ShareCare.Data
+@model IEnumerable<ShareCare.Models.Group>
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Index</h1>
+
+@{
+    var message = TempData["Message"];
+    var alertType = TempData["AlertType"];
+
+    ApplicationUser loggedInUser = (ApplicationUser)ViewData["User"];
+}
+
+@if (message != null)
+{
+    <div class="alert @alertType">
+        @message
+    </div>
+}
+
+<p>
+    <a class="btn btn-success" asp-action="Create">Új csoport létrehozása</a>
+    <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#joinGroupModal">
+        Csatlakozás egy csoporthoz
+    </a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CreatorUser)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Users)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.Id">
+                        @Html.DisplayFor(modelItem => item.Name)
+                    </a>
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CreatorUser.FullName) 
+                </td>
+                <td>
+                    @foreach (var user in item.Users)
+                    {
+                        <p>@user.FullName</p>
+                    }
+                </td>
+                @if (loggedInUser == item.CreatorUser)
+                {
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.Id">Módosítás</a>
+                        <a asp-action="Delete" asp-route-id="@item.Id">Törlés</a>
+                    </td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+
+
+
+<!-- Modal (Popup) -->
+<div class="modal fade" id="joinGroupModal" tabindex="-1" aria-labelledby="joinGroupModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="joinGroupModalLabel">Csatlakozás egy csoporthoz</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Bezár"></button>
+            </div>
+            <div class="modal-body">
+                <h7>Kérem adja meg a csoport meghívó kódját!</h7>
+                <br>
+                <form action="@Url.Action("JoinGroup", "Groups")" method="post" id="joinGroupForm">
+                    <div class="mb-3">
+                        <input type="text" class="form-control" id="inviteCode" name="inviteCode" placeholder="Meghívó kód" required>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Bezár</button>
+                        <button type="submit" class="btn btn-primary">Csatlakozás</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

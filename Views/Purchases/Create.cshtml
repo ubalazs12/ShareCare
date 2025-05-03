@@ -1,0 +1,91 @@
+﻿@using ShareCare.Data
+@model ShareCare.Models.Purchase
+
+@{
+    ViewData["Title"] = "Create";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    Group group = (Group) ViewData["Group"];
+    ApplicationUser user = (ApplicationUser)ViewData["User"];
+    int numberOfUsers = group.Users.Count;
+    var debts = (Dictionary<string, string>)ViewData["Debts"];
+}
+
+<h1>Vásárlás rögzítése</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group" style="display: none">
+                <label asp-for="GroupId" class="control-label fw-bold"></label>
+                <select asp-for="GroupId" class ="form-control" asp-items="ViewBag.GroupId"></select>
+            </div>
+            <div class="form-group" style="display: none">
+                <label asp-for="UploaderUserId" class="control-label fw-bold"></label>
+                <select asp-for="UploaderUserId" class ="form-control" asp-items="ViewBag.UploaderUserId"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="TotalAmount" class="control-label fw-bold"></label>
+                <input asp-for="TotalAmount" class="form-control" />
+                <span asp-validation-for="TotalAmount" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label class="control-label fw-bold">Elosztások</label>
+                <div class="ps-5">
+                    @foreach (var member in group.Users)
+                    {
+                        <div class="form-group">
+                            <label class="control-label">@member.FullName</label>
+                            <input type="number" name=@member.Id class="form-control" value=@(debts.ContainsKey(member.Id) ? debts[member.Id] : "asd") />
+                        </div>
+                    }
+                </div>
+                
+            </div>
+            <div class="form-group">
+                <label asp-for="Note" class="control-label fw-bold"></label>
+                <input asp-for="Note" class="form-control" />
+                <span asp-validation-for="Note" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label for="imageFile" style="all: unset; cursor: pointer;">
+                    <i title="Kép kiválasztása" class="bi bi-image fs-4"></i>
+                </label>
+                <input type="file" name="imageFile" id="imageFile" style="display: none;" onchange="showFileName(this)">
+                <span id="selectedFileName" class="ms-2">Nincs kiválasztott fájl</span>
+                @if (ViewData.ModelState["imageFile"] != null && ViewData.ModelState["imageFile"].Errors.Count > 0)
+                {
+                    <div class="text-danger">@ViewData.ModelState["imageFile"].Errors[0].ErrorMessage</div>
+                }
+            </div>
+            @* <div class="form-group">
+                <label asp-for="ImageMimeType" class="control-label fw-bold"></label>
+                <input asp-for="ImageMimeType" class="form-control" />
+                <span asp-validation-for="ImageMimeType" class="text-danger"></span>
+            </div> *@
+            <div class="form-group mt-2">
+                <input type="submit" value="Feltöltés" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-controller="Groups" asp-action="Purchases" asp-route-id="@group.Id" method="post" title="Vásárlások">Vissza a vásárlásokhoz</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+
+<script>
+    function showFileName(input) {
+        const fileNameSpan = document.getElementById("selectedFileName");
+        if (input.files.length > 0) {
+            fileNameSpan.textContent = input.files[0].name;
+        } else {
+            fileNameSpan.textContent = "Nincs kiválasztott fájl";
+        }
+    }
+</script>

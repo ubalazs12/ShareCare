@@ -1,0 +1,31 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using ShareCare.Data
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="d-flex justify-content-center align-items-center" style="min-height: calc(100vh - 118px);">
+<div class="text-center">
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <h1 class="display-4">Üdvözöllek @UserManager.GetUserName(User) a ShareCare weboldalán!</h1>
+        <div class="mt-4">
+            <a asp-controller="Groups" asp-action="Index" class="btn btn-primary"><h2 class="m-0">Csoportjaim</h2></a>
+        </div>
+    }
+    else
+    {
+        <h1 class="display-4">Üdvözöllek a ShareCare weboldalán!</h1>
+        <div class="mt-4">
+            <h5>A folytatáshoz</h5>
+            <h5>
+                <a asp-controller="Account" asp-action="Login" class="btn btn-primary"><h5 class="m-0">Jelentkezz be</h5></a>
+                vagy
+                <a asp-controller="Account" asp-action="Register" class="btn btn-success"><h5 class="m-0">Regisztrálj!</h5></a>
+            </h5>
+        </div>
+    }
+</div>
+</div>

@@ -1,0 +1,56 @@
+﻿@model ShareCare.Models.Debt
+
+@{
+    ViewData["Title"] = "Create";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Create</h1>
+
+<h4>Debt</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="PurchaseId" class="control-label"></label>
+                <select asp-for="PurchaseId" class ="form-control" asp-items="ViewBag.PurchaseId"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="UploaderUserId" class="control-label"></label>
+                <select asp-for="UploaderUserId" class ="form-control" asp-items="ViewBag.UploaderUserId"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="OwerUserId" class="control-label"></label>
+                <select asp-for="OwerUserId" class ="form-control" asp-items="ViewBag.OwerUserId"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="Amount" class="control-label"></label>
+                <input asp-for="Amount" class="form-control" />
+                <span asp-validation-for="Amount" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ApprovalState" class="control-label"></label>
+                <select asp-for="ApprovalState" class="form-control"></select>
+                <span asp-validation-for="ApprovalState" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PaymentState" class="control-label"></label>
+                <select asp-for="PaymentState" class="form-control"></select>
+                <span asp-validation-for="PaymentState" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
