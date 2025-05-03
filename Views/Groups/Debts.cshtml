@@ -6,314 +6,110 @@
     ViewData["Group"] = Model;
     ViewData["GroupId"] = Model.Id;
     Layout = "~/Views/Shared/_Layout.cshtml";
-    List<KeyValuePair<(ApplicationUser, ApplicationUser), double>> totalDebts = (List<KeyValuePair<(ApplicationUser, ApplicationUser), double>>) ViewData["TotalDebts"];
-    List<KeyValuePair<(ApplicationUser, ApplicationUser), ValueAndList>> totalDebtsSimpler = (List<KeyValuePair<(ApplicationUser, ApplicationUser), ValueAndList>>)ViewData["TotalDebtsSimpler"];
-    List<KeyValuePair<(ApplicationUser, ApplicationUser), ValueAndList>> totalDebtsSimplest = (List<KeyValuePair<(ApplicationUser, ApplicationUser), ValueAndList>>)ViewData["TotalDebtsSimplest"];
+
+    List<KeyValuePair<(ApplicationUser, ApplicationUser), ValueAndList>> debtsToOthers = (List<KeyValuePair<(ApplicationUser, ApplicationUser), ValueAndList>>)ViewData["DebtsToOthers"];
+    List<KeyValuePair<(ApplicationUser, ApplicationUser), ValueAndList>> debtsToMe = (List<KeyValuePair<(ApplicationUser, ApplicationUser), ValueAndList>>)ViewData["DebtsToMe"];
+
+    List<Purchase> IdlePayments = ViewData["IdlePayments"] as List<Purchase>;
+    ApplicationUser user = ViewData["User"] as ApplicationUser;
+
     var arrow = "---->";
-    int totalDebtIndex = 0;
 }
 
-<nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white mb-3 w-100">
-<ul class="navbar-nav flex-grow-1">
-    <li class="nav-item p-2">
-        <button onclick="toggleDiv('totalDebts')">Nem egyszerűsített tartozások</button>
-    </li>
-    <li class="nav-item p-2">
-        <button onclick="toggleDiv('totalDebtsSimpler')">Egyszerűsített tartozások (csak kölcsönös)</button>
-    </li>
-    <li class="nav-item p-2">
-        <button onclick="toggleDiv('totalDebtsSimplest')">Egyszerűsített tartozások (kölcsönös és körtartozás)</button>
-    </li>
-</ul>
-</nav>
-<div id="totalDebts" class="hidden ">
-    <h1>Nem egyszerűsített tartozások</h1>
+<h1>Tartozások</h1>
 
-    <table class="table w-100 align-middle">
-        <thead>
-            <tr>
-                <th class="w-auto text-nowrap">
-                    Ki?
-                </th>
-                <th class="w-auto text-nowrap">
+<h2 class="mt-4 mb-2">Tartozásaim</h2>
+<div>
+    @foreach (var totalDebt in debtsToOthers)
+    {
+        <div class="card">
+            <div class="card-header w-100 d-flex align-items-center">
+                <span class="p-1">
+                    @totalDebt.Key.Item2.FullName
+                </span>
+                <span class="p-1">
                     @arrow
-                </th>
-                <th class="w-auto text-nowrap">
-                    Kinek?
-                </th>
-                <th class="w-75 text-end">
-                    Összeg
-                </th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var totalDebt in totalDebts)
-            {
-                if (true)
-                {
-                    <tr>
-                        <td class="text-nowrap">
-                            @totalDebt.Key.Item2.FullName
-                        </td>
-                        <td>
-                            @arrow
-                        </td>
-                        <td class="text-nowrap">
-                            @totalDebt.Key.Item1.FullName
-                        </td>
-                        <td class="text-end">
-                            @totalDebt.Value
-                        </td>
-                    </tr>
-                }
-            }
-        </tbody>
-    </table>
+                </span>
+                <span class="p-1">
+                    @totalDebt.Key.Item1.FullName
+                </span>
+                <span class="p-1">
+                    @totalDebt.Value.Value
+                </span>
+                <span class="flex-grow-1 text-end me-3">
+                    <form asp-action="PayDebt" asp-controller="Purchases">
+                        <input type="hidden" id="groupId" name="groupId" value=@Model.Id />
+                        <input type="hidden" id="owerId" name="owerId" value=@totalDebt.Key.Item2.Id />
+                        <input type="hidden" id="receiverId" name="receiverId" value=@totalDebt.Key.Item1.Id />
+                        <input type="hidden" id="value" name="value" value=@totalDebt.Value.Value />
+                        <button type="submit" style="all: unset; cursor: pointer;"><i title="Kiegyenlítés" class="fa fa-money-bill-transfer fs-3 text-success m-1"></i></button>
+                    </form>
+                </span>
+            </div>
+        </div>
+    }
 </div>
 
-<div id="totalDebtsSimpler">
-    <h1>Egyszerűsített tartozások (csak kölcsönös)</h1>
-
-    <div class="accordion" id="totalDebtsAccordion">
-        @foreach (var totalDebt in totalDebtsSimpler)
-        {
-            string expandedDebtsId = "expandedDebts-" + totalDebtIndex;
-
-            <div class="accordion-item">
-                <div class=" accordion-header">
-                    <span>
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#expandedDebts-@totalDebtIndex"
-                                aria-expanded="false" aria-controls="expandedDebts-@totalDebtIndex">
-                            <div>
-                                <span>
-                                    @totalDebt.Key.Item2.FullName
-                                </span>
-                                <span>
-                                    @arrow
-                                </span>
-                                <span>
-                                    @totalDebt.Key.Item1.FullName
-                                </span>
-                                <span>
-                                    @totalDebt.Value.Value
-                                </span>
-                            </div>
-                        </button>
-                    </span>
-                </div>
-                <div id="expandedDebts-@totalDebtIndex" class="accordion-collapse collapse" data-bs-parent="#totalDebtsAccordion">
-                    @foreach (var originalDebt in totalDebt.Value.Debts)
-                    {
-                        <div class="accordion-body">
-                            <span>
-                                @originalDebt.OwerUser.FullName
-                            </span>
-                            <span>
-                                @arrow
-                            </span>
-                            <span>
-                                @originalDebt.UploaderUser.FullName
-                            </span>
-                            <span>
-                                @originalDebt.Amount
-                            </span>
-                        </div>
-                    }
-                </div>
+<h2 class="mt-4 mb-2">Mások tartozásai nekem</h2>
+<div>
+    @foreach (var totalDebt in debtsToMe)
+    {
+        <div class="card">
+            <div class="card-header w-100 d-flex align-items-center">
+                <span>
+                    @totalDebt.Key.Item2.FullName
+                </span>
+                <span>
+                    @arrow
+                </span>
+                <span>
+                    @totalDebt.Key.Item1.FullName
+                </span>
+                <span>
+                    @totalDebt.Value.Value
+                </span>
             </div>
+        </div>
+    }
+</div>
 
-            totalDebtIndex++;
+<h2 class="mt-4 mb-2">Elfogadásra váró kiegyenlítések</h2>
+    <div>
+        @foreach (var payment in IdlePayments)
+        {
+            foreach (var debt in payment.Debts)
+            {
+                <div class="card">
+                    <div class="card-header w-100 d-flex align-items-center">
+                        @* <span class="p-1">
+                            <h4>@debt.UploaderUser.FullName</h4>
+                        </span>
+                        <span class="p-1">
+                            <h4>fizetett</h4>
+                        </span>
+                        <span class="p-1">
+                            <h4>@debt.OwerUser.FullName</h4>
+                        </span>
+                        <span class="p-1">
+                            <h4>felhasználónak</h4>
+                        </span>
+                        <span class="p-1">
+                            <h4>@debt.Amount Ft-ot</h4>
+                        </span> *@
+                        <span class="p-1">
+                            @debt.UploaderUser.FullName fizetett @debt.OwerUser.FullName felhasználónak @debt.Amount Ft-ot
+                        </span>
+                        @if (debt.OwerUser == user)
+                        {
+                            <span class="flex-grow-1 text-end me-3">
+                                <form asp-action="ApprovePayment" asp-controller="Debts">
+                                    <input type="hidden" id="id" name="id" value=@debt.Id />
+                                    <button type="submit" style="all: unset; cursor: pointer;"><i title="Elfogadás" class="fa fa-check fs-3 text-success m-1"></i></button>
+                                </form>
+                            </span>
+                        }
+                    </div>
+                </div>
+            }
         }
     </div>
-    @* <table class="table align-middle w-100">
-        <thead>
-            <tr>
-                <th class="w-auto text-nowrap">
-                    Ki?
-                </th>
-                <th class="w-auto text-nowrap">
-                    @arrow
-                </th>
-                <th class="w-auto text-nowrap">
-                    Kinek?
-                </th>
-                <th class="w-75 text-end">
-                    Összeg
-                </th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var totalDebt in totalDebtsSimpler)
-            {
-                if (true)
-                {
-                    string expandedDebtsId = "expandedDebts-" + totalDebtIndex;
-                    <tr>
-                        <td class="text-nowrap">
-                            @totalDebt.Key.Item2.FullName
-                        </td>
-                        <td>
-                            @arrow
-                        </td>
-                        <td class="text-nowrap">
-                            @totalDebt.Key.Item1.FullName
-                        </td>
-                        <td class="text-end">
-                            @totalDebt.Value.Value
-                        </td>
-                        <td>
-                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target=@string.Concat("#", expandedDebtsId) aria-controls=@expandedDebtsId
-                                    aria-expanded="false" aria-label="Toggle Debts">
-                            </button>
-                        </td>
-                    </tr>
-                    <tr id=@expandedDebtsId class="collapse">
-                        <td colspan="4" class="ps-4 pe-0">
-                            <table class="table align-middle w-100">
-                                <tbody>
-                                    @foreach (var originalDebt in totalDebt.Value.Debts)
-                                    {
-                                        <tr>
-                                            <td class="text-nowrap">
-                                                @originalDebt.OwerUser.FullName
-                                            </td>
-                                            <td>
-                                                @arrow
-                                            </td>
-                                            <td class="text-nowrap">
-                                                @originalDebt.UploaderUser.FullName
-                                            </td>
-                                            <td class="text-end">
-                                                @originalDebt.Amount
-                                            </td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </td>
-                    </tr>
-                    totalDebtIndex++;
-                }
-            }
-        </tbody>
-    </table> *@
-</div>
-
-<div id="totalDebtsSimplest" class="hidden">
-    <h1>Egyszerűsített tartozások (kölcsönös és körtartozás)</h1>
-
-    <div class="accordion" id="totalDebtsAccordion">
-        @foreach (var totalDebt in totalDebtsSimplest)
-        {
-            string expandedDebtsId = "expandedDebts-" + totalDebtIndex;
-
-            <div class="accordion-item">
-                <div class=" accordion-header">
-                    <span>
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#expandedDebts-@totalDebtIndex"
-                                aria-expanded="false" aria-controls="expandedDebts-@totalDebtIndex">
-                            <div>
-                                <span>
-                                    @totalDebt.Key.Item2.FullName
-                                </span>
-                                <span>
-                                    @arrow
-                                </span>
-                                <span>
-                                    @totalDebt.Key.Item1.FullName
-                                </span>
-                                <span>
-                                    @totalDebt.Value.Value
-                                </span>
-                            </div>
-                        </button>
-                    </span>
-                </div>
-                <div id="expandedDebts-@totalDebtIndex" class="accordion-collapse collapse" data-bs-parent="#totalDebtsAccordion">
-                    @foreach (var originalDebt in totalDebt.Value.Debts)
-                    {
-                        <div class="accordion-body">
-                            <span>
-                                @originalDebt.OwerUser.FullName
-                            </span>
-                            <span>
-                                @arrow
-                            </span>
-                            <span>
-                                @originalDebt.UploaderUser.FullName
-                            </span>
-                            <span>
-                                @originalDebt.Amount
-                            </span>
-                        </div>
-                    }
-                </div>
-            </div>
-
-            totalDebtIndex++;
-        }
-    </div>
-
-    @* <table class="table align-middle w-100">
-        <thead>
-            <tr>
-                <th class="w-auto text-nowrap">
-                    Ki?
-                </th>
-                <th class="w-auto text-nowrap">
-                    @arrow
-                </th>
-                <th class="w-auto text-nowrap">
-                    Kinek?
-                </th>
-                <th class="w-75 text-end">
-                    Összeg
-                </th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var totalDebt in totalDebtsSimplest)
-            {
-                if (true)
-                {
-                    <tr>
-                        <td class="text-nowrap">
-                            @totalDebt.Key.Item2.FullName
-                        </td>
-                        <td>
-                            @arrow
-                        </td>
-                        <td class="text-nowrap">
-                            @totalDebt.Key.Item1.FullName
-                        </td>
-                        <td class="text-end">
-                            @totalDebt.Value
-                        </td>
-                    </tr>
-                }
-            }
-        </tbody>
-    </table> *@
-</div>
-
-<style>
-    .hidden {
-        display: none;
-    }
-</style>
-
-<script>
-    function toggleDiv(divId) {
-        var list = ["totalDebts", "totalDebtsSimpler", "totalDebtsSimplest"];
-        list.forEach((item, index) => {
-            if (item === divId) 
-            { 
-                document.getElementById(item).style.display = "block";
-            }
-            else
-            {
-                document.getElementById(item).style.display = "none";
-            }
-        });
-    }
-</script>

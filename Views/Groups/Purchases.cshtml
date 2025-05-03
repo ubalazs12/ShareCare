@@ -41,7 +41,31 @@
 
                     </button>
                 </div>
-                <div id="purchase-@purchase.Id" class="accordion-collapse collapse" data-bs-parent="#purchasesAccordion">
+                <div id="purchase-@purchase.Id" class="accordion-collapse collapse">
+                    @if (purchase.ImageData != null)
+                    {
+                        <div class="p-3 pb-0">
+                            <button style="all: unset; cursor: pointer;" data-bs-toggle="modal" data-bs-target="#imageModal-@purchase.Id">
+                                <i title="Kép megtekintése" class="bi bi-image fs-1"></i>
+                            </button>
+                        </div>
+
+                        <div class="modal fade" id="imageModal-@purchase.Id" tabindex="-1" aria-labelledby="imageModalLabel-@purchase.Id" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="imageModalLabel-@purchase.Id"></h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Bezárás"></button>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <img src="@Url.Action("GetImage", "Purchases", new { id = purchase.Id })"
+                                             class="img-fluid"
+                                             style="max-height: 80vh;" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
                     @foreach (var debt in purchase.Debts.OrderBy(debt => debt.OwerUser != user))
                     {
                         <div class="accordion-body w-100 d-flex align-items-center">
@@ -78,3 +102,4 @@
         }
     </div>
 </div>
+

@@ -22,20 +22,19 @@ namespace ShareCare.Logic
         public List<Edge>[] Graph { get; set; }
         public List<Edge> Edges { get; set; }
 
-        private int _VisitedToken = 1;
-        private int[] Visited;
+        public HashSet<(int, int)> Visited;
 
         public bool Solved { get; set; }
 
-        public Dinics(int numberOfVertexes, string[] vertexLabels)
+        public Dinics(int numberOfVertexes, string[] vertexLabels, HashSet<(int, int)> visited)
         {
             NumberOfVertexes = numberOfVertexes;
             InitializeGraph();
             AssignLabelsToVertices(vertexLabels);
             MinCut = new bool[numberOfVertexes];
-            Visited = new int[numberOfVertexes];
             Level = new int[numberOfVertexes];
             Edges = new List<Edge>();
+            Visited = visited;
         }
 
         private void InitializeGraph()
@@ -79,11 +78,6 @@ namespace ShareCare.Logic
             Edges.Add(e1);
         }
 
-        public void MarkAllNodesAsUnvisited()
-        {
-            _VisitedToken++;
-        }
-
         public List<Edge>[] GetSolvedGraph()
         {
             execute();
@@ -105,6 +99,16 @@ namespace ShareCare.Logic
 
         public void Recompute()
         {
+            for (int i = 0; i < NumberOfVertexes; i++)
+            {
+                for (int j = 0; j < NumberOfVertexes; j++)
+                {
+                    if (i != j && Edges.FirstOrDefault(e => (e.From == i && e.To == j)) == null)
+                    {
+                        AddEdge(i, j, 0, []);
+                    }
+                }
+            }
             Solved = false;
         }
 
@@ -174,6 +178,15 @@ namespace ShareCare.Logic
                 }
             }
             return 0;
+        }
+
+        public void AddToVisited(Edge edge)
+        {
+            Visited.Add((edge.From, edge.To));
+        }
+        public Edge GetNonVisitedEdge()
+        {
+            return Edges.LastOrDefault(e => !Visited.Contains((e.From, e.To)));
         }
 
         public string PrintEdges()

@@ -35,6 +35,12 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.User.RequireUniqueEmail = true;
 });
 
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    // LoginPath
+    options.LoginPath = "/Account/Login";
+});
+
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();

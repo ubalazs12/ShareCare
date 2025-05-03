@@ -7,6 +7,7 @@
     Group group = (Group) ViewData["Group"];
     ApplicationUser user = (ApplicationUser)ViewData["User"];
     int numberOfUsers = group.Users.Count;
+    var debts = (Dictionary<string, string>)ViewData["Debts"];
 }
 
 <h1>Vásárlás rögzítése</h1>
@@ -14,7 +15,7 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Create">
+        <form asp-action="Create" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group" style="display: none">
                 <label asp-for="GroupId" class="control-label fw-bold"></label>
@@ -36,7 +37,7 @@
                     {
                         <div class="form-group">
                             <label class="control-label">@member.FullName</label>
-                            <input type="number" name=@member.Id class="form-control" />
+                            <input type="number" name=@member.Id class="form-control" value=@(debts.ContainsKey(member.Id) ? debts[member.Id] : "asd") />
                         </div>
                     }
                 </div>
@@ -48,15 +49,21 @@
                 <span asp-validation-for="Note" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="ImageData" class="control-label fw-bold"></label>
-                <input asp-for="ImageData" class="form-control" />
-                <span asp-validation-for="ImageData" class="text-danger"></span>
+                <label for="imageFile" style="all: unset; cursor: pointer;">
+                    <i title="Kép kiválasztása" class="bi bi-image fs-4"></i>
+                </label>
+                <input type="file" name="imageFile" id="imageFile" style="display: none;" onchange="showFileName(this)">
+                <span id="selectedFileName" class="ms-2">Nincs kiválasztott fájl</span>
+                @if (ViewData.ModelState["imageFile"] != null && ViewData.ModelState["imageFile"].Errors.Count > 0)
+                {
+                    <div class="text-danger">@ViewData.ModelState["imageFile"].Errors[0].ErrorMessage</div>
+                }
             </div>
-            <div class="form-group">
+            @* <div class="form-group">
                 <label asp-for="ImageMimeType" class="control-label fw-bold"></label>
                 <input asp-for="ImageMimeType" class="form-control" />
                 <span asp-validation-for="ImageMimeType" class="text-danger"></span>
-            </div>
+            </div> *@
             <div class="form-group mt-2">
                 <input type="submit" value="Feltöltés" class="btn btn-primary" />
             </div>
@@ -71,3 +78,14 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }
+
+<script>
+    function showFileName(input) {
+        const fileNameSpan = document.getElementById("selectedFileName");
+        if (input.files.length > 0) {
+            fileNameSpan.textContent = input.files[0].name;
+        } else {
+            fileNameSpan.textContent = "Nincs kiválasztott fájl";
+        }
+    }
+</script>

@@ -39,5 +39,7 @@ namespace ShareCare.Models
 
         [Display(Name = "Tartozások")]
         public ICollection<Debt> Debts { get; set; } = [];
+
+        public bool IsPayment {  get; set; } = false;
     }
 }

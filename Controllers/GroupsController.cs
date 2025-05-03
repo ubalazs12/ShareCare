@@ -33,10 +33,7 @@ namespace ShareCare.Controllers
         public async Task<IActionResult> Index()
         {
             var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                return Unauthorized();
-            }
+            ViewData["User"] = user;
             var applicationDbContext = _context.Groups.Include(group => group.CreatorUser).Include(group => group.Users).Where(group => group.Users.Any(u => u.Id == user.Id));
             return View(await applicationDbContext.ToListAsync());
         }
@@ -61,6 +58,41 @@ namespace ShareCare.Controllers
             }
 
             ViewData["Users"] = group.Users;
+
+            var request = HttpContext.Request;
+            var baseUrl = $"{request.Scheme}://{request.Host}";
+            ViewData["InviteLink"] = $"{baseUrl}/Groups/JoinGroupWithLink?inviteCode={group.Id}";
+            return View(@group);
+        }
+
+        // GET: Groups/Payments/5
+        [HttpGet]
+        public async Task<IActionResult> Payments(string? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+            var @group = await _context.Groups
+                .Include(group => group.CreatorUser)
+                .Include(group => group.Users)
+                .Include(group => group.Purchases)
+                .ThenInclude(purchase => purchase.Debts)
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (@group == null)
+            {
+                return NotFound();
+            }
+
+            ViewData["User"] = user;
+            ViewData["Users"] = group.Users;
+            ViewData["ApprovedPayments"] = group.Purchases.Where(purchase => (purchase.IsPayment && purchase.Debts.All(debt => (debt.ApprovalState == eApprovalState.eApproved)))).ToList();
+            ViewData["IdlePayments"] = group.Purchases.Where(purchase => (purchase.IsPayment && purchase.Debts.All(debt => (debt.ApprovalState == eApprovalState.eIdle)))).ToList();
 
             var request = HttpContext.Request;
             var baseUrl = $"{request.Scheme}://{request.Host}";
@@ -94,7 +126,7 @@ namespace ShareCare.Controllers
 
             ViewData["User"] = user;
             ViewData["Users"] = group.Users;
-            ViewData["Purchases"] = group.Purchases/*.Where(p => p.Debts.All(d => d.ApprovalState == eApprovalState.eApproved || d.OwerUser == d.UploaderUser))*/.ToList();
+            ViewData["Purchases"] = group.Purchases.Where(purchase => (!purchase.IsPayment)).ToList();
 
             var request = HttpContext.Request;
             var baseUrl = $"{request.Scheme}://{request.Host}";
@@ -176,6 +208,11 @@ namespace ShareCare.Controllers
         [HttpGet]
         public async Task<IActionResult> Debts(string? id)
         {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
             if (id == null)
             {
                 return NotFound();
@@ -192,10 +229,23 @@ namespace ShareCare.Controllers
                 return NotFound();
             }
 
-            ViewData["TotalDebts"] = GetTotalDebtsNoSimplification(group).Where(totalDebt => (totalDebt.Value > 0)).ToList();
-            ViewData["TotalDebtsSimpler"] = GetTotalDebtsNoBackAndForth(group).Where(totalDebt => (totalDebt.Value.Value > 0)).ToList();
-            ViewData["TotalDebtsSimplest"] = GetTotalDebtsTransitiveSimple(group).Where(totalDebt => (totalDebt.Value.Value > 0)).ToList();
+            var totalDebts = GetTotalDebtsNoSimplification(group).Where(totalDebt => (totalDebt.Value > 0)).ToList();
+            var totalDebtsSimpler = GetTotalDebtsNoBackAndForth(group).Where(totalDebt => (totalDebt.Value.Value > 0)).ToList();
+            var totalDebtsSimplest = GetTotalDebtsTransitiveSimple(group).Where(totalDebt => (totalDebt.Value.Value > 0)).ToList();
+
+            var debtsToOthers = totalDebtsSimplest.Where(debt => (debt.Key.Item2 == user)).ToList();
+            var debtsToMe = totalDebtsSimplest.Where(debt => (debt.Key.Item1 == user)).ToList();
+
+            ViewData["DebtsToOthers"] = debtsToOthers;
+            ViewData["DebtsToMe"] = debtsToMe;
+
+            ViewData["TotalDebts"] = totalDebts;
+            ViewData["TotalDebtsSimpler"] = totalDebtsSimpler;
+            ViewData["TotalDebtsSimplest"] = totalDebtsSimplest;
             ViewData["Users"] = group.Users;
+
+            ViewData["IdlePayments"] = group.Purchases.Where(purchase => (purchase.IsPayment && purchase.Debts.All(debt => (debt.ApprovalState == eApprovalState.eIdle)))).ToList();
+            ViewData["User"] = user;
 
             return View(@group);
         }
@@ -240,8 +290,13 @@ namespace ShareCare.Controllers
                 return NotFound();
             }
 
-            var @group = await _context.Groups.FindAsync(id);
+            var @group = await _context.Groups.Include(g => g.CreatorUser).FirstOrDefaultAsync(g => g.Id == id);
             if (@group == null)
+            {
+                return NotFound();
+            }
+            var user = await _userManager.GetUserAsync(User);
+            if (group.CreatorUser != user)
             {
                 return NotFound();
             }
@@ -257,6 +312,11 @@ namespace ShareCare.Controllers
         public async Task<IActionResult> Edit(string id, [Bind("Id,Name,CreatorUserId")] Group @group)
         {
             if (id != @group.Id)
+            {
+                return NotFound();
+            }
+            var user = await _userManager.GetUserAsync(User);
+            if (user != null && group.CreatorUserId != user.Id)
             {
                 return NotFound();
             }
@@ -301,6 +361,11 @@ namespace ShareCare.Controllers
             {
                 return NotFound();
             }
+            var user = await _userManager.GetUserAsync(User);
+            if (group.CreatorUser != user)
+            {
+                return NotFound();
+            }
 
             return View(@group);
         }
@@ -310,9 +375,15 @@ namespace ShareCare.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
-            var @group = await _context.Groups.FindAsync(id);
+            var @group = await _context.Groups.Include(g => g.CreatorUser).FirstOrDefaultAsync(g => g.Id == id);
+            
             if (@group != null)
             {
+                var user = await _userManager.GetUserAsync(User);
+                if (@group.CreatorUser != user)
+                {
+                    return NotFound();
+                }
                 _context.Groups.Remove(@group);
             }
 
@@ -384,7 +455,7 @@ namespace ShareCare.Controllers
                         double roTotal = group.Debts.Where(debt => (debt.UploaderUser == receiver && debt.OwerUser == ower && debt.ApprovalState == eApprovalState.eApproved)).Sum(debt => debt.Amount);
                         totalDebts[roTuple] = new ValueAndList();
                         totalDebts[roTuple].Value = roTotal;
-                        totalDebts[roTuple].Debts.AddRange(group.Debts.Where(debt => (debt.UploaderUser == receiver && debt.OwerUser == ower)));
+                        totalDebts[roTuple].Debts.AddRange(group.Debts.Where(debt => (debt.UploaderUser == receiver && debt.OwerUser == ower && debt.ApprovalState == eApprovalState.eApproved)));
                         if (totalDebts.ContainsKey(orTuple))
                         {
                             double orTotal = totalDebts[orTuple].Value;
@@ -413,9 +484,8 @@ namespace ShareCare.Controllers
             var userList = group.Users.ToList();
 
             string[] usernames = group.Users.Select(user => user.FullName).ToArray();
-            Dinics solver = new Dinics(group.Users.Count, usernames);
+            Dinics solver = new Dinics(group.Users.Count, usernames, []);
             List<Edge> edges = new List<Edge>();
-            List<Edge> visitedEdges = new List<Edge>();
             foreach (var totalDebt in totalDebts)
             {
                 if (totalDebt.Value.Value >= 0)
@@ -429,14 +499,16 @@ namespace ShareCare.Controllers
             }
             solver.AddEdges(edges);
 
-            foreach (var edge in edges)
+            Edge edge1;
+            while ((edge1 = solver.GetNonVisitedEdge()) != null)
             {
                 solver.Recompute();
-                solver.Source = edge.From;
-                solver.Sink = edge.To;
+                solver.Source = edge1.From;
+                solver.Sink = edge1.To;
+                solver.AddToVisited(edge1);
                 List<Edge>[] residualGraph = solver.GetSolvedGraph();
                 List<Edge> newEdges = new List<Edge>();
-                HashSet<Debt> debts = edge.Debts;
+                HashSet<Debt> debts = edge1.Debts;
 
                 foreach (List<Edge> allEdges in residualGraph)
                 {
@@ -461,14 +533,56 @@ namespace ShareCare.Controllers
                 int source = solver.Source;
                 int sink = solver.Sink;
 
-                solver = new Dinics(group.Users.Count, usernames);
+                solver = new Dinics(group.Users.Count, usernames, solver.Visited);
 
                 solver.AddEdges(newEdges);
-                if (maxFlow > 0)
+                if (true || maxFlow > 0)
                 {
                     solver.AddEdge(source, sink, maxFlow, debts);
                 }
+                solver.Recompute();
             }
+
+            //foreach (var edge in edges)
+            //{
+            //    solver.Recompute();
+            //    solver.Source = edge.From;
+            //    solver.Sink = edge.To;
+            //    List<Edge>[] residualGraph = solver.GetSolvedGraph();
+            //    List<Edge> newEdges = new List<Edge>();
+            //    HashSet<Debt> debts = edge.Debts;
+
+            //    foreach (List<Edge> allEdges in residualGraph)
+            //    {
+            //        foreach (Edge e in allEdges)
+            //        {
+            //            double remainingFlow = ((e.Flow < 0) ? e.Capacity : (e.Capacity - e.Flow));
+            //            if (remainingFlow > 0)
+            //            {
+            //                var newEdge = new Edge(e.From, e.To, remainingFlow);
+            //                newEdge.Debts.AddRange(e.Debts);
+            //                newEdges.Add(newEdge);
+            //            }
+            //            else
+            //            {
+            //                debts.AddRange(e.Debts);
+            //            }
+            //        }
+            //    }
+
+            //    double maxFlow = solver.MaxFlow;
+
+            //    int source = solver.Source;
+            //    int sink = solver.Sink;
+
+            //    solver = new Dinics(group.Users.Count, usernames, []);
+
+            //    solver.AddEdges(newEdges);
+            //    if (maxFlow > 0)
+            //    {
+            //        solver.AddEdge(source, sink, maxFlow, debts);
+            //    }
+            //}
 
 
             totalDebts = [];

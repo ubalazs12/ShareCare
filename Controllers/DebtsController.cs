@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -11,6 +12,7 @@ using ShareCare.Models;
 
 namespace ShareCare.Controllers
 {
+    [Authorize]
     public class DebtsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -191,6 +193,24 @@ namespace ShareCare.Controllers
             debt.ApprovalState = eApprovalState.eApproved;
 
             await _context.SaveChangesAsync();
+            return RedirectToAction("PurchasesToApprove", "Groups", new { id = debt.GroupId });
+        }
+
+        // POST: Debts/ApprovePayment/5
+        [HttpPost, ActionName("ApprovePayment")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApprovePayment(int id)
+        {
+            var debt = await _context.Debt.FindAsync(id);
+            if (debt == null)
+            {
+                return NotFound();
+            }
+            debt.ApprovalState = eApprovalState.eApproved;
+
+            await _context.SaveChangesAsync();
+            var referer = Request.Headers["Referer"].ToString();
+            return Redirect(referer.ToString());
             return RedirectToAction("PurchasesToApprove", "Groups", new { id = debt.GroupId });
         }
 
