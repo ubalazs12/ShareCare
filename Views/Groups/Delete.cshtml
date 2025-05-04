@@ -5,23 +5,16 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Delete</h1>
+<h1>Törlés</h1>
 
 <h3>Biztosan törölni szeretné a csoportot?</h3>
 <div>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-    </dl>
-    
+    <hr />    
     <form asp-action="Delete">
         <input type="hidden" asp-for="Id" />
-        <input type="submit" value="Törlés" class="btn btn-danger" /> |
-        <a asp-action="Index">Vissza a csoportokhoz</a>
+        <input type="submit" value="Törlés" class="btn btn-danger" />
     </form>
+</div>
+<div class="mt-1">
+    <a class="text-decoration-none" asp-action="Index">Mégse</a>
 </div>

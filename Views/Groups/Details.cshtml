@@ -34,7 +34,7 @@
         <dt class="col-sm-2">
             Meghívó kód
         </dt>
-        <dd class="col-sm-10">
+        <dd class="col-sm-10 user-select-all">
             @Html.DisplayFor(model => model.Id)
         </dd>
         @* <dt class="col-sm-2">
@@ -47,5 +47,5 @@
 </div>
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.Id">Szerkesztés</a> |
-    <a asp-action="Index">Vissza a csoportokhoz</a>
+    <a asp-action="Index">Vissza</a>
 </div>

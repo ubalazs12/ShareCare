@@ -17,15 +17,15 @@
                 <input asp-for="Name" class="form-control" />
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
-            <div class="form-group mt-2">
+            <div class="form-group mt-1">
                 <input type="submit" value="Létrehozás" class="btn btn-primary" />
             </div>
         </form>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Vissza a csoportokhoz</a>
+<div class="mt-1">
+    <a class="text-decoration-none" asp-action="Index">Vissza</a>
 </div>
 
 @section Scripts {
