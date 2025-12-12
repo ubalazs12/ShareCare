@@ -1,7 +1,7 @@
 ﻿@model ShareCare.Models.Group
-<nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light border-bottom box-shadow mb-3">
+<nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark border-bottom box-shadow mb-3">
     <div class="container-fluid">
-        <a class="navbar-brand" asp-area="" asp-controller="Groups" asp-action="Details" asp-route-id="@Model.Id">@Model.Name</a>
+        <a class="navbar-brand link-light link-opacity-50-hover" asp-area="" asp-controller="Groups" asp-action="Details" asp-route-id="@Model.Id">@Model.Name</a>
         <button class="navbar-toggler mb-1" type="button" data-bs-toggle="collapse" data-bs-target="#group-navbar" aria-controls="navbarSupportedContent"
                 aria-expanded="false" aria-label="Menü lenyitása">
             <span class="navbar-toggler-icon"></span>
@@ -10,23 +10,23 @@
             <ul class="navbar-nav flex-grow-1">
                 <li class="nav-item hover-dropdown d-none d-sm-block">
                     <div class="d-flex align-items-center">
-                        <a id="purchases" class="nav-link text-dark" aria-expanded="false" asp-controller="Groups" asp-action="Purchases" asp-route-id="@Model.Id" method="post" title="Vásárlások">Vásárlások</a>
+                        <a id="purchases" class="nav-link link-light link-opacity-50-hover" aria-expanded="false" asp-controller="Groups" asp-action="Purchases" asp-route-id="@Model.Id" method="post" title="Vásárlások">Vásárlások</a>
                     </div>
                     <ul class="dropdown-menu pt-0 pb-0">
                         <li class="nav-item">
-                            <a id="purchasesToApprove" class="nav-link text-dark" asp-controller="Groups" asp-action="PurchasesToApprove" asp-route-id="@Model.Id" method="post" title="Elfogadásra váró vásárlások">Elfogadásra váró vásárlások</a>
+                            <a id="purchasesToApprove" class="nav-link link-light link-opacity-50-hover" asp-controller="Groups" asp-action="PurchasesToApprove" asp-route-id="@Model.Id" method="post" title="Elfogadásra váró vásárlások">Elfogadásra váró vásárlások</a>
                         </li>
                         <li class="nav-item">
-                            <a id="rejectedPurchases" class="nav-link text-dark" asp-controller="Groups" asp-action="RejectedPurchases" asp-route-id="@Model.Id" method="post" title="Elutasított vásárlások">Elutasított vásárlások</a>
+                            <a id="rejectedPurchases" class="nav-link link-light link-opacity-50-hover" asp-controller="Groups" asp-action="RejectedPurchases" asp-route-id="@Model.Id" method="post" title="Elutasított vásárlások">Elutasított vásárlások</a>
                         </li>
                     </ul>
                 </li>
                 <li class="nav-item d-block d-sm-none">
-                    <div class="d-flex align-items-center align-items-stretch">
-                        <a id="purchases" class="nav-link text-dark flex-grow-1 d-flex align-items-center" aria-expanded="false" asp-controller="Groups" asp-action="Purchases" asp-route-id="@Model.Id" method="post" title="Vásárlások">Vásárlások</a>
+                    <div class="d-flex align-items-center align-items-stretch accordion">
+                        <a id="purchases" class="nav-link link-light link-opacity-50-hover flex-grow-1 d-flex align-items-center" aria-expanded="false" asp-controller="Groups" asp-action="Purchases" asp-route-id="@Model.Id" method="post" title="Vásárlások">Vásárlások</a>
                         
                         <div class="d-flex align-items-center">
-                            <button class="btn bg-white border-0 shadow-none accordion-button collapsed"
+                            <button class="btn bg-transparent text-light border-0 shadow-none accordion-button collapsed"
                                     type="button"
                                     data-bs-toggle="collapse"
                                     data-bs-target="#collapsePurchasesMenu"
@@ -38,12 +38,12 @@
                     <div class="collapse" id="collapsePurchasesMenu">
                         <ul class="navbar-nav flex-grow-1 ms-2">
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Groups" asp-action="PurchasesToApprove" asp-route-id="@Model.Id">
+                                <a class="nav-link link-light link-opacity-50-hover" asp-controller="Groups" asp-action="PurchasesToApprove" asp-route-id="@Model.Id">
                                     Elfogadásra váró vásárlások
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Groups" asp-action="RejectedPurchases" asp-route-id="@Model.Id">
+                                <a class="nav-link link-light link-opacity-50-hover" asp-controller="Groups" asp-action="RejectedPurchases" asp-route-id="@Model.Id">
                                     Elutasított vásárlások
                                 </a>
                             </li>
@@ -52,10 +52,10 @@
                     
                 </li>
                 <li class="nav-item">
-                    <a id="payments" class="nav-link text-dark" asp-controller="Groups" asp-action="Payments" asp-route-id="@Model.Id" method="post" title="Kiegyenlítések">Kiegyenlítések</a>
+                    <a id="payments" class="nav-link link-light link-opacity-50-hover" asp-controller="Groups" asp-action="Payments" asp-route-id="@Model.Id" method="post" title="Kiegyenlítések">Kiegyenlítések</a>
                 </li>
                 <li class="nav-item">
-                    <a id="debts" class="nav-link text-dark" asp-controller="Groups" asp-action="Debts" asp-route-id="@Model.Id" method="post" title="Tartozások">Tartozások</a>
+                    <a id="debts" class="nav-link link-light link-opacity-50-hover" asp-controller="Groups" asp-action="Debts" asp-route-id="@Model.Id" method="post" title="Tartozások">Tartozások</a>
                 </li>
             </ul>
         </div>

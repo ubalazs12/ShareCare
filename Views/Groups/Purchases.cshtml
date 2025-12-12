@@ -13,10 +13,9 @@
 
 <div>
     <h1>Vásárlások</h1>
-    @* @await Html.PartialAsync("~/Views/Purchases/Index.cshtml", purchases) *@
 
     <p>
-        <a asp-controller="Purchases" asp-action="Create" asp-route-groupId=@Model.Id>Új vásárlás feltöltése</a>
+        <a class="btn btn-success" asp-controller="Purchases" asp-action="Create" asp-route-groupId=@Model.Id>Új vásárlás feltöltése</a>
     </p>
     <div class="accordion" id="purchasesAccordion">
         @foreach (var purchase in purchases)
@@ -31,7 +30,7 @@
                                     <h4>@purchase.UploaderUser.FullName</h4>
                                 </div>
                                 <div class="ms-1">
-                                    <h5>@purchase.TotalAmount</h5>
+                                    <h5>@(purchase.TotalAmount)Ft</h5>
                                 </div>
                                 <div class="ms-1">
                                     <h5>@purchase.Note</h5>
@@ -74,7 +73,7 @@
                                     @debt.OwerUser.FullName
                                 </div>
                                 <div>
-                                    @debt.Amount
+                                    @(debt.Amount)Ft
                                 </div>
                             </span>
                             @switch (debt.ApprovalState)

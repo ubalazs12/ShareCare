@@ -25,7 +25,7 @@ public class RegisterViewModel
     public string LastName { get; set; }
 
     [Required(ErrorMessage = "A jelszó mező kitöltése kötelező!")]
-    [StringLength(100, ErrorMessage = "A jelszónak legalább {2} karakter hosszúságúnak kell lennie!", MinimumLength = 6)]
+    //[StringLength(100, ErrorMessage = "A jelszónak legalább {2} karakter hosszúságúnak kell lennie!", MinimumLength = 6)]
     [DataType(DataType.Password)]
     [Display(Name = "Jelszó")]
     public string Password { get; set; }

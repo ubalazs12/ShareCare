@@ -22,21 +22,21 @@
 <div>
     @foreach (var totalDebt in debtsToOthers)
     {
-        <div class="card">
+        <div class="card mb-2">
             <div class="card-header w-100 d-flex align-items-center">
-                <span class="p-1">
+                <span>
                     @totalDebt.Key.Item2.FullName
                 </span>
-                <span class="p-1">
-                    @arrow
+                <span class="mx-1">
+                    <i class="bi bi-arrow-right"></i>
                 </span>
-                <span class="p-1">
+                <span>
                     @totalDebt.Key.Item1.FullName
                 </span>
-                <span class="p-1">
-                    @totalDebt.Value.Value
+                <span class="flex-grow-1 text-end me-2">
+                    @(totalDebt.Value.Value)Ft
                 </span>
-                <span class="flex-grow-1 text-end me-3">
+                <span class="text-end">
                     <form asp-action="PayDebt" asp-controller="Purchases">
                         <input type="hidden" id="groupId" name="groupId" value=@Model.Id />
                         <input type="hidden" id="owerId" name="owerId" value=@totalDebt.Key.Item2.Id />
@@ -54,19 +54,19 @@
 <div>
     @foreach (var totalDebt in debtsToMe)
     {
-        <div class="card">
+        <div class="card mb-2">
             <div class="card-header w-100 d-flex align-items-center">
                 <span>
                     @totalDebt.Key.Item2.FullName
                 </span>
-                <span>
-                    @arrow
+                <span class="mx-1">
+                    <i class="bi bi-arrow-right"></i>
                 </span>
                 <span>
                     @totalDebt.Key.Item1.FullName
                 </span>
-                <span>
-                    @totalDebt.Value.Value
+                <span class="flex-grow-1 text-end me-2">
+                    @(totalDebt.Value.Value)Ft
                 </span>
             </div>
         </div>
@@ -79,32 +79,30 @@
         {
             foreach (var debt in payment.Debts)
             {
-                <div class="card">
+                <div class="card mb-2">
                     <div class="card-header w-100 d-flex align-items-center">
-                        @* <span class="p-1">
-                            <h4>@debt.UploaderUser.FullName</h4>
-                        </span>
-                        <span class="p-1">
-                            <h4>fizetett</h4>
-                        </span>
-                        <span class="p-1">
-                            <h4>@debt.OwerUser.FullName</h4>
-                        </span>
-                        <span class="p-1">
-                            <h4>felhasználónak</h4>
-                        </span>
-                        <span class="p-1">
-                            <h4>@debt.Amount Ft-ot</h4>
-                        </span> *@
-                        <span class="p-1">
-                            @debt.UploaderUser.FullName fizetett @debt.OwerUser.FullName felhasználónak @debt.Amount Ft-ot
-                        </span>
+                    <span>
+                        @debt.UploaderUser.FullName
+                    </span>
+                    <span class="mx-1">
+                        <i class="bi bi-arrow-right"></i>
+                    </span>
+                    <span>
+                        @debt.OwerUser.FullName
+                    </span>
+                    <span class="flex-grow-1 text-end me-2">
+                        @(debt.Amount)Ft
+                    </span>
                         @if (debt.OwerUser == user)
                         {
-                            <span class="flex-grow-1 text-end me-3">
-                                <form asp-action="ApprovePayment" asp-controller="Debts">
+                            <span class="flex-grow-1 text-end d-flex justify-content-end align-items-center me-1">
+                                <form asp-action="ApprovePayment" asp-controller="Debts" class="me-2">
                                     <input type="hidden" id="id" name="id" value=@debt.Id />
                                     <button type="submit" style="all: unset; cursor: pointer;"><i title="Elfogadás" class="fa fa-check fs-3 text-success m-1"></i></button>
+                                </form>
+                                <form asp-action="RejectPayment" asp-controller="Debts">
+                                    <input type="hidden" id="id" name="id" value=@debt.Id />
+                                    <button type="submit" style="all: unset; cursor: pointer;"><i title="Elutasítás" class="fa fa-times fs-3 text-danger m-1"></i></button>
                                 </form>
                             </span>
                         }

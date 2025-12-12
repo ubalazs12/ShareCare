@@ -12,6 +12,7 @@ using NuGet.Packaging;
 using ShareCare.Data;
 using ShareCare.Logic;
 using ShareCare.Models;
+using SixLabors.ImageSharp.Formats.Png;
 
 namespace ShareCare.Controllers
 {
@@ -161,7 +162,7 @@ namespace ShareCare.Controllers
 
             ViewData["User"] = user;
             ViewData["Users"] = group.Users;
-            ViewData["Purchases"] = group.Purchases.Where(p => p.Debts.Any(d => d.OwerUser == user && d.UploaderUser != user && d.ApprovalState == eApprovalState.eIdle)).ToList();
+            ViewData["Purchases"] = group.Purchases.Where(p => !p.IsPayment && (p.Debts.Any(d => d.OwerUser == user && d.UploaderUser != user && d.ApprovalState == eApprovalState.eIdle))).ToList();
 
             var request = HttpContext.Request;
             var baseUrl = $"{request.Scheme}://{request.Host}";
@@ -196,7 +197,7 @@ namespace ShareCare.Controllers
 
             ViewData["User"] = user;
             ViewData["Users"] = group.Users;
-            ViewData["Purchases"] = group.Purchases.Where(p => p.UploaderUser == user && p.Debts.Any(d => d.ApprovalState == eApprovalState.eRejected)).ToList();
+            ViewData["Purchases"] = group.Purchases.Where(p => !p.IsPayment && (p.UploaderUser == user && p.Debts.Any(d => d.ApprovalState == eApprovalState.eRejected))).ToList();
 
             var request = HttpContext.Request;
             var baseUrl = $"{request.Scheme}://{request.Host}";
@@ -258,8 +259,6 @@ namespace ShareCare.Controllers
         }
 
         // POST: Groups/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Name")] Group @group)
@@ -269,8 +268,6 @@ namespace ShareCare.Controllers
             {
                 @group.CreatorUserId = user.Id;
                 @group.Users.Add(user);
-                //ModelState.ClearValidationState(nameof(@group.CreatorUserId));
-                //ModelState.MarkFieldValid(nameof(@group.CreatorUserId));
             }
             if (ModelState.IsValid)
             {
@@ -305,8 +302,6 @@ namespace ShareCare.Controllers
         }
 
         // POST: Groups/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(string id, [Bind("Id,Name,CreatorUserId")] Group @group)
@@ -452,8 +447,16 @@ namespace ShareCare.Controllers
                     {
                         var roTuple = (receiver, ower);
                         var orTuple = (ower, receiver);
-                        double roTotal = group.Debts.Where(debt => (debt.UploaderUser == receiver && debt.OwerUser == ower && debt.ApprovalState == eApprovalState.eApproved)).Sum(debt => debt.Amount);
-                        totalDebts[roTuple] = new ValueAndList();
+                        double roTotal = group.Debts
+                            .Where(debt =>
+                                debt.UploaderUser == receiver &&
+                                debt.OwerUser == ower &&
+                                (
+                                    debt.ApprovalState == eApprovalState.eApproved ||
+                                    (debt.Purchase.IsPayment && debt.ApprovalState != eApprovalState.eRejected)
+                                )
+                            )
+                            .Sum(debt => debt.Amount); totalDebts[roTuple] = new ValueAndList();
                         totalDebts[roTuple].Value = roTotal;
                         totalDebts[roTuple].Debts.AddRange(group.Debts.Where(debt => (debt.UploaderUser == receiver && debt.OwerUser == ower && debt.ApprovalState == eApprovalState.eApproved)));
                         if (totalDebts.ContainsKey(orTuple))
@@ -468,13 +471,6 @@ namespace ShareCare.Controllers
                     }
                 }
             }
-            //foreach(var debt in totalDebts)
-            //{
-            //    if (debt.Value.Value <= 0)
-            //    {
-            //        totalDebts.Remove(debt.Key);
-            //    }
-            //}
             return totalDebts;
         }
 
@@ -483,8 +479,8 @@ namespace ShareCare.Controllers
             Dictionary<(ApplicationUser, ApplicationUser), ValueAndList> totalDebts = GetTotalDebtsNoBackAndForth(group);
             var userList = group.Users.ToList();
 
-            string[] usernames = group.Users.Select(user => user.FullName).ToArray();
-            Dinics solver = new Dinics(group.Users.Count, usernames, []);
+            string[] userNames = group.Users.Select(user => user.FullName).ToArray();
+            Dinics solver = new Dinics(group.Users.Count, userNames, []);
             List<Edge> edges = new List<Edge>();
             foreach (var totalDebt in totalDebts)
             {
@@ -533,7 +529,7 @@ namespace ShareCare.Controllers
                 int source = solver.Source;
                 int sink = solver.Sink;
 
-                solver = new Dinics(group.Users.Count, usernames, solver.Visited);
+                solver = new Dinics(group.Users.Count, userNames, solver.Visited);
 
                 solver.AddEdges(newEdges);
                 if (true || maxFlow > 0)
@@ -542,48 +538,6 @@ namespace ShareCare.Controllers
                 }
                 solver.Recompute();
             }
-
-            //foreach (var edge in edges)
-            //{
-            //    solver.Recompute();
-            //    solver.Source = edge.From;
-            //    solver.Sink = edge.To;
-            //    List<Edge>[] residualGraph = solver.GetSolvedGraph();
-            //    List<Edge> newEdges = new List<Edge>();
-            //    HashSet<Debt> debts = edge.Debts;
-
-            //    foreach (List<Edge> allEdges in residualGraph)
-            //    {
-            //        foreach (Edge e in allEdges)
-            //        {
-            //            double remainingFlow = ((e.Flow < 0) ? e.Capacity : (e.Capacity - e.Flow));
-            //            if (remainingFlow > 0)
-            //            {
-            //                var newEdge = new Edge(e.From, e.To, remainingFlow);
-            //                newEdge.Debts.AddRange(e.Debts);
-            //                newEdges.Add(newEdge);
-            //            }
-            //            else
-            //            {
-            //                debts.AddRange(e.Debts);
-            //            }
-            //        }
-            //    }
-
-            //    double maxFlow = solver.MaxFlow;
-
-            //    int source = solver.Source;
-            //    int sink = solver.Sink;
-
-            //    solver = new Dinics(group.Users.Count, usernames, []);
-
-            //    solver.AddEdges(newEdges);
-            //    if (maxFlow > 0)
-            //    {
-            //        solver.AddEdge(source, sink, maxFlow, debts);
-            //    }
-            //}
-
 
             totalDebts = [];
             Dictionary<(ApplicationUser, ApplicationUser), double> totalDebts2 = [];

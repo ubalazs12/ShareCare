@@ -8,7 +8,7 @@
 
 
 <p>
-    <a asp-controller=@controller asp-action="Create" asp-route-groupId=@groupId>Új vásárlás feltöltése</a>
+    <a class="btn btn-success" asp-controller=@controller asp-action="Create" asp-route-groupId=@groupId>Új vásárlás feltöltése</a>
 </p>
 <div class="accordion" id="purchasesAccordion">
     @foreach (var purchase in Model)
@@ -21,7 +21,7 @@
                             <h4>@purchase.UploaderUser.FullName</h4>
                         </div>
                         <div class="ms-1">
-                            <h5>@purchase.TotalAmount</h5>
+                            <h5>@(purchase.TotalAmount)Ft</h5>
                         </div>
                         <div class="ms-1">
                             <h5>@purchase.Note</h5>

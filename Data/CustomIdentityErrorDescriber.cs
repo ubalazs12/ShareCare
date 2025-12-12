@@ -49,5 +49,40 @@ namespace ShareCare.Data
             };
         }
 
+        public override IdentityError PasswordRequiresDigit()
+        {
+            return new IdentityError
+            {
+                Code = nameof(PasswordRequiresDigit),
+                Description = "A jelszónak tartalmaznia kell legalább egy számot!"
+            };
+        }
+
+        public override IdentityError PasswordRequiresLower()
+        {
+            return new IdentityError
+            {
+                Code = nameof(PasswordRequiresLower),
+                Description = "A jelszónak tartalmaznia kell legalább egy kisbetűt!"
+            };
+        }
+
+        public override IdentityError PasswordRequiresUpper()
+        {
+            return new IdentityError
+            {
+                Code = nameof(PasswordRequiresUpper),
+                Description = "A jelszónak tartalmaznia kell legalább egy nagybetűt!"
+            };
+        }
+
+        public override IdentityError PasswordTooShort(int length)
+        {
+            return new IdentityError
+            {
+                Code = nameof(PasswordTooShort),
+                Description = $"A jelszónak legalább {length} karakter hosszúságúnak kell lennie!"
+            };
+        }
     }
 }

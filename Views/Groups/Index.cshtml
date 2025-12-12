@@ -33,10 +33,10 @@
 
 @foreach (var item in Model)
 {
-    <div class="card">
+    <div class="card mb-2 ">
         <div class="card-header d-flex justify-content-between align-items-stretch pt-0 pb-0 pe-0">
             <a asp-action="Details" asp-route-id="@item.Id"
-               class="flex-grow-1 d-flex align-items-center text-decoration-none">
+               class="flex-grow-1 d-flex align-items-center text-decoration-none link-light link-opacity-50-hover">
                 <h5 class="mb-0 ps-2">@Html.DisplayFor(modelItem => item.Name)</h5>
             </a>
 
@@ -45,6 +45,10 @@
                 {
                     <a class="m-1 mt-3 mb-3 btn btn-primary text-decoration-none" asp-action="Edit" asp-route-id="@item.Id">Módosítás</a>
                     <a class="m-1 mt-3 mb-3 btn btn-danger text-decoration-none" asp-action="Delete" asp-route-id="@item.Id">Törlés</a>
+                }
+                else
+                {
+                    <a class="m-1 mt-3 mb-3 btn btn-primary text-decoration-none opacity-0">Placeholder</a>
                 }
 
                 <button class="btn m-0 flex-grow-1 bg-light border-0 shadow-none accordion-button collapsed" type="button"

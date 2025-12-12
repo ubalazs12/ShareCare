@@ -13,11 +13,7 @@
 
 <div>
     <h1>Elutasított vásárlások</h1>
-    @* @await Html.PartialAsync("~/Views/Purchases/Index.cshtml", purchases) *@
 
-    <p>
-        <a asp-controller="Purchases" asp-action="Create" asp-route-groupId=@Model.Id>Új vásárlás feltöltése</a>
-    </p>
     <div class="accordion" id="purchasesAccordion">
         @foreach (var purchase in purchases)
         {
@@ -31,7 +27,7 @@
                                     <h4>@purchase.UploaderUser.FullName</h4>
                                 </div>
                                 <div class="ms-1">
-                                    <h5>@purchase.TotalAmount</h5>
+                                    <h5>@(purchase.TotalAmount)Ft</h5>
                                 </div>
                                 <div class="ms-1">
                                     <h5>@purchase.Note</h5>
@@ -74,7 +70,7 @@
                                     @debt.OwerUser.FullName
                                 </div>
                                 <div>
-                                    @debt.Amount
+                                    @(debt.Amount)Ft
                                 </div>
                             </span>
                             <span class="flex-grow-1 text-end me-3">
@@ -84,42 +80,6 @@
                                     </a>
                                 </div>
                             </span>
-                            @* @if (debt.OwerUser == user)
-                            {
-                                <span class="flex-grow-1 text-end me-3">
-                                    <form asp-action="Approve" asp-controller="Debts">
-                                        <input type="hidden" id="id" name="id" value=@debt.Id />
-                                        <button type="submit" style="all: unset; cursor: pointer;"><i title="Elfogadás" class="fa fa-check fs-3 text-success m-1"></i></button>
-                                    </form>
-                                </span>
-                                <span class="text-end me-3">
-                                    <form asp-action="Reject" asp-controller=Debts>
-                                        <input type="hidden" id="id" name="id" value=@purchase.Id />
-                                        <button type="submit" style="all: unset; cursor: pointer;"><i title="Elutasítás" class="fa fa-times fs-3 text-danger m-1"></i></button>
-                                    </form>
-                                </span>
-                            }
-                            else
-                            {
-                                switch (debt.ApprovalState)
-                                {
-                                    case eApprovalState.eIdle:
-                                        <span class="flex-grow-1 text-end me-3">
-                                            Elfogadásra vár
-                                        </span>
-                                        break;
-                                    case eApprovalState.eRejected:
-                                        <span class="flex-grow-1 text-end me-3">
-                                            Elutasítva
-                                        </span>
-                                        break;
-                                    case eApprovalState.eApproved:
-                                        <span class="flex-grow-1 text-end me-3">
-                                            Elfogadva
-                                        </span>
-                                        break;
-                                }
-                            } *@
                         </div>
                     }
                 </div>

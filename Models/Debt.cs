@@ -31,6 +31,8 @@ namespace ShareCare.Models
 
 
         [Required]
+        [Display(Name = "Összeg")]
+        [DisplayFormat(DataFormatString = "{0}Ft")]
         public double Amount { get; set; }
 
         public eApprovalState ApprovalState { get; set; }

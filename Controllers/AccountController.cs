@@ -54,30 +54,20 @@ public class AccountController : Controller
             }
             if (user != null)
             {
-                // This doesn't count login failures towards account lockout
-                // To enable password failures to trigger account lockout, set lockoutOnFailure: true
                 var result = await _signInManager.PasswordSignInAsync(user.UserName, model.Password, model.RememberMe, lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
-                    //_logger.LogInformation(1, "User logged in.");
                     return RedirectToLocal(returnUrl);
                 }
                 if (result.IsLockedOut)
                 {
-                    //_logger.LogWarning(2, "User account locked out.");
                     return View("Lockout");
-                }
-                else
-                {
-                    ModelState.AddModelError(string.Empty, "Sikertelen bejelentkezés!");
-                    return View(model);
                 }
             }
             ModelState.AddModelError(string.Empty, "Sikertelen bejelentkezés!");
             return View(model);
         }
 
-        // If we got this far, something failed, redisplay form
         return View(model);
     }
 
@@ -96,9 +86,8 @@ public class AccountController : Controller
     [HttpPost]
     [AllowAnonymous]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Register(RegisterViewModel model, string returnUrl = null)
+    public async Task<IActionResult> Register(RegisterViewModel model)
     {
-        ViewData["ReturnUrl"] = returnUrl;
         if (ModelState.IsValid)
         {
             var user = new ApplicationUser { UserName = model.UserName, Email = model.Email, FirstName = model.FirstName, LastName = model.LastName };
@@ -108,12 +97,11 @@ public class AccountController : Controller
                 
                 await _signInManager.SignInAsync(user, isPersistent: false);
                 _logger.LogInformation(3, "User created a new account with password.");
-                return RedirectToLocal(returnUrl);
+                return RedirectToLocal("Index");
             }
             AddErrors(result);
         }
 
-        // If we got this far, something failed, redisplay form
         return View(model);
     }
 

@@ -8,6 +8,7 @@
     ApplicationUser user = (ApplicationUser)ViewData["User"];
     int numberOfUsers = group.Users.Count;
     var debts = (Dictionary<string, string>)ViewData["Debts"];
+    var sumError = ViewData["NotMatchingSumError"];
 }
 
 <h1>Vásárlás rögzítése</h1>
@@ -17,6 +18,10 @@
     <div class="col-md-4">
         <form asp-action="Create" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            @if (sumError != null)
+            {
+                <span class="text-danger">@sumError</span>
+            }
             <div class="form-group" style="display: none">
                 <label asp-for="GroupId" class="control-label fw-bold"></label>
                 <select asp-for="GroupId" class ="form-control" asp-items="ViewBag.GroupId"></select>
@@ -27,17 +32,21 @@
             </div>
             <div class="form-group">
                 <label asp-for="TotalAmount" class="control-label fw-bold"></label>
-                <input asp-for="TotalAmount" class="form-control" />
+                <input asp-for="TotalAmount" class="form-control" type="number" />
                 <span asp-validation-for="TotalAmount" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label class="control-label fw-bold">Elosztások</label>
+                <label class="control-label fw-bold">Elosztások (Ft)</label>
                 <div class="ps-5">
                     @foreach (var member in group.Users)
                     {
                         <div class="form-group">
                             <label class="control-label">@member.FullName</label>
-                            <input type="number" name=@member.Id class="form-control" value=@(debts.ContainsKey(member.Id) ? debts[member.Id] : "asd") />
+                            <input type="number" name=@member.Id class="form-control" value=@(debts.ContainsKey(member.Id) ? debts[member.Id] : "A felhasználó nem található") />
+                            @if (ViewData[$"DebtError{member.Id}"] != null)
+                            {
+                                <span class="text-danger">@ViewData[$"DebtError{member.Id}"]</span>
+                            }
                         </div>
                     }
                 </div>

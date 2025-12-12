@@ -24,7 +24,7 @@ namespace ShareCare.Models
         public virtual ApplicationUser? UploaderUser { get; set; }
 
         [Required(ErrorMessage = "Az összeg mező kitöltése kötelező!")]
-        [Display(Name = "Vásárlás összege")]
+        [Display(Name = "Vásárlás összege (Ft)")]
         public double TotalAmount { get; set; }
 
         [Required(ErrorMessage = "A megjegyzés mező kitöltése kötelező!")]

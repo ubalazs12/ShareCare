@@ -11,62 +11,35 @@
     List<Purchase> IdlePayments = ViewData["IdlePayments"] as List<Purchase>;
     ApplicationUser user = ViewData["User"] as ApplicationUser;
 }
-@* <div>
-    @foreach (var payment in payments)
-    {
-        foreach (var debt in payment.Debts)
-        {
-            <div class="card">
-                <div class="card-header w-100 d-flex align-items-center">
-                    <span class="p-1">
-                        @debt.UploaderUser.FullName
-                    </span>
-                    <span class="p-1">
-                        fizetett
-                    </span>
-                    <span class="p-1">
-                        @debt.OwerUser.FullName felhasználónak
-                    </span>
-                    <span class="p-1">
-                        @debt.Amount
-                        Ft-ot
-                    </span>
-                </div>
-            </div>
-        }
-    }
-</div> *@
+
 <div>
     <h1>Kiegyenlítések</h1>
 
     <h3>Elfogadott kiegyenlítések</h3>
-    <div>
+@*     <div>
         @foreach (var payment in ApprovedPayments)
         {
             foreach (var debt in payment.Debts)
             {
-                <div class="card">
+                <div class="card mb-2">
                     <div class="card-header w-100 d-flex align-items-center">
-                        @* <span class="p-1">
-                            <h4>@debt.UploaderUser.FullName</h4>
+                        <span>
+                            @debt.UploaderUser.FullName
                         </span>
-                        <span class="p-1">
-                            <h4>fizetett</h4>
+                        <span class="mx-1">
+                            <i class="bi bi-arrow-right"></i>
                         </span>
-                        <span class="p-1">
-                            <h4>@debt.OwerUser.FullName felhasználónak</h4>
+                        <span>
+                            @debt.OwerUser.FullName
                         </span>
-                        <span class="p-1">
-                            <h4>@debt.Amount Ft-ot</h4>
-                        </span> *@
-                        <span class="p-1">
-                            <h5>@debt.UploaderUser.FullName fizetett @debt.OwerUser.FullName felhasználónak @debt.Amount Ft-ot</h5>
+                        <span class="flex-grow-1 text-end me-2">
+                            @(debt.Amount)Ft
                         </span>
                     </div>
                 </div>
             }
         }
-    </div>
+    </div> *@
 
     <h3>Elfogadásra váró kiegyenlítések</h3>
     <div>
@@ -74,32 +47,30 @@
         {
             foreach (var debt in payment.Debts)
             {
-                <div class="card">
+                <div class="card mb-2">
                     <div class="card-header w-100 d-flex align-items-center">
-                        @* <span class="p-1">
-                            <h4>@debt.UploaderUser.FullName</h4>
+                        <span>
+                            @debt.UploaderUser.FullName
                         </span>
-                        <span class="p-1">
-                            <h4>fizetett</h4>
+                        <span class="mx-1">
+                            <i class="bi bi-arrow-right"></i>
                         </span>
-                        <span class="p-1">
-                            <h4>@debt.OwerUser.FullName</h4>
+                        <span>
+                            @debt.OwerUser.FullName
                         </span>
-                        <span class="p-1">
-                            <h4>felhasználónak</h4>
-                        </span>
-                        <span class="p-1">
-                            <h4>@debt.Amount Ft-ot</h4>
-                        </span> *@
-                        <span class="p-1">
-                            <h5>@debt.UploaderUser.FullName fizetett @debt.OwerUser.FullName felhasználónak @debt.Amount Ft-ot</h5>
+                        <span class="flex-grow-1 text-end me-2">
+                            @(debt.Amount)Ft
                         </span>
                         @if (debt.OwerUser == user)
                         {
-                            <span class="flex-grow-1 text-end me-3">
+                            <span class="text-end d-flex justify-content-end align-items-center me-1">
                                 <form asp-action="ApprovePayment" asp-controller="Debts">
                                     <input type="hidden" id="id" name="id" value=@debt.Id />
                                     <button type="submit" style="all: unset; cursor: pointer;"><i title="Elfogadás" class="fa fa-check fs-3 text-success m-1"></i></button>
+                                </form>
+                                <form asp-action="RejectPayment" asp-controller="Debts">
+                                    <input type="hidden" id="id" name="id" value=@debt.Id />
+                                    <button type="submit" style="all: unset; cursor: pointer;"><i title="Elutasítás" class="fa fa-times fs-3 text-danger m-1"></i></button>
                                 </form>
                             </span>
                         }
