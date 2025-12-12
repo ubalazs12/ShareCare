@@ -532,7 +532,7 @@ namespace ShareCare.Controllers
                 solver = new Dinics(group.Users.Count, userNames, solver.Visited);
 
                 solver.AddEdges(newEdges);
-                if (true || maxFlow > 0)
+                if (maxFlow > 0)
                 {
                     solver.AddEdge(source, sink, maxFlow, debts);
                 }

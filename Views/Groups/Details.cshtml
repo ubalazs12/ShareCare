@@ -14,16 +14,16 @@
 <div>
     <hr />
     <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CreatorUser)
+        <dt class = "col-sm-4">
+            Csoport&nbsptulajdonosa
         </dt>
-        <dd class = "col-sm-10">
+        <dd class = "col-sm-8">
             @Html.DisplayFor(model => model.CreatorUser.FullName)
         </dd>
-        <dt class="col-sm-2">
+        <dt class="col-sm-4">
             @Html.DisplayNameFor(model => model.Users)
         </dt>
-        <dd class="col-sm-10">
+        <dd class="col-sm-8">
             @foreach (var user in ViewData["Users"] as List<ApplicationUser>)
             {
                 <p class="m-0">
@@ -31,21 +31,14 @@
                 </p>
             }
         </dd>
-        <dt class="col-sm-2">
-            Meghívó kód
+        <dt class="col-sm-4">
+            Meghívó&nbspkód
         </dt>
-        <dd class="col-sm-10 user-select-all">
+        <dd class="col-sm-8 user-select-all">
             @Html.DisplayFor(model => model.Id)
         </dd>
-        @* <dt class="col-sm-2">
-            Invite link
-        </dt>
-        <dd class="col-sm-10">
-            @ViewData["InviteLink"]
-        </dd> *@
     </dl>
 </div>
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Szerkesztés</a> |
-    <a asp-action="Index">Vissza</a>
+    <a class="btn btn-danger" asp-action="Index">Vissza</a>
 </div>

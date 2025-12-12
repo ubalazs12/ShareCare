@@ -22,34 +22,6 @@ namespace ShareCare.Controllers
             _context = context;
         }
 
-        // GET: Debts
-        public async Task<IActionResult> Index()
-        {
-            var applicationDbContext = _context.Debt.Include(d => d.OwerUser).Include(d => d.Purchase).Include(d => d.UploaderUser);
-            return View(await applicationDbContext.ToListAsync());
-        }
-
-        // GET: Debts/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var debt = await _context.Debt
-                .Include(d => d.OwerUser)
-                .Include(d => d.Purchase)
-                .Include(d => d.UploaderUser)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (debt == null)
-            {
-                return NotFound();
-            }
-
-            return View(debt);
-        }
-
         // GET: Debts/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
