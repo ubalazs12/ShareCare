@@ -10,7 +10,7 @@ namespace ShareCare.Models
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public string? Id { get; set; } = "INITIAL_ID";
 
-        [Required]
+        [Required(ErrorMessage = "A Csoportnév mező kitöltése kötelező!")]
         [Display(Name = "Csoportnév")]
         public required string Name { get; set; }
 

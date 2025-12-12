@@ -50,23 +50,6 @@
                 {
                     <a class="m-1 mt-3 mb-3 btn btn-primary text-decoration-none opacity-0">Placeholder</a>
                 }
-
-                <button class="btn m-0 flex-grow-1 bg-light border-0 shadow-none accordion-button collapsed" type="button"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#collapseGroupCard-@listIndex"
-                        aria-expanded="false"
-                        aria-controls="collapseGroupCard-@listIndex">
-                </button>
-            </div>
-        </div>
-        <div class="collapse" id="collapseGroupCard-@listIndex">
-            <div class="card-body">
-                <h5 class="card-title">@Html.DisplayFor(modelItem => item.CreatorUser.FullName) csoportja</h5>
-                <h7 class="card-text fw-bold">Tagok:</h7>
-                @foreach (var user in item.Users)
-                {
-                    <p class="card-text m-1">@user.FullName</p>
-                }
             </div>
         </div>
     </div>
